@@ -174,6 +174,22 @@ Following these conventions improves maintainability, collaboration, and scalabi
 
 ---
 
+## 📋 Project Board & Workflow
+
+All project management, issue tracking, and progress tracking are managed via our GitHub Project Board:
+
+- [NourishNet Project Board](https://github.com/users/Muditha-Kumara/projects/6)
+
+**How to use:**
+- Check the board for assigned tasks, priorities, and status updates.
+- Move cards as you progress (e.g., from "To do" to "In progress").
+- Link issues and pull requests to relevant board items for transparency.
+- Communicate blockers or updates directly on the board or via GitHub Issues.
+
+Following this workflow ensures professional collaboration and project visibility for all contributors.
+
+---
+
 ## 🧪 4. Running, Testing, and Deploying
 
 - **Run the project locally:**

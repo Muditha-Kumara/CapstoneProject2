@@ -4,7 +4,7 @@
 
 Mobilizing communities to directly address childhood food insecurity by connecting children in need with a network of donors and food providers.
 
-[📄 Project Proposal](./docs/PROJECT_PROPOSAL.md) | [🛠️ Development Guide](./docs/DEVELOPMENT_GUIDE.md)
+[📄 Project Proposal](./docs/PROJECT_PROPOSAL.md) | [🛠️ Development Guide](./docs/DEVELOPMENT_GUIDE.md) | [📋 Project Board](https://github.com/users/Muditha-Kumara/projects/6)
 
 ---
 
