@@ -39,26 +39,22 @@ CapstoneProject2/
 ```
 
 ## ⚡ Quick Start
-1. **Clone the repository:**
+1. **Clone and setup:**
    ```bash
    git clone git@github.com:Muditha-Kumara/CapstoneProject2.git
    cd CapstoneProject2
+   cp .env.example .env  # Edit with your configuration
    ```
-2. **Install dependencies:**
+2. **Start development environment:**
    ```bash
-   cd src/frontend && npm install
-   cd ../backend && npm install
+   docker-compose up --build
    ```
-3. **Set up environment variables:**
-   - Copy `.env.example` to `.env` in both `src/frontend` and `src/backend` and fill in required values.
-4. **Run PostgreSQL database:**
-   - Use Docker Compose:
-     ```bash
-     docker-compose up --build
-     ```
-5. **Access the app:**
+3. **Access the application:**
    - Frontend: [http://localhost:3000](http://localhost:3000)
    - Backend API: [http://localhost:5000](http://localhost:5000)
+   - Database Admin: [http://localhost:8080](http://localhost:8080)
+
+📖 **Detailed Setup:** See [Quick Setup Guide](./docs/QUICK_SETUP.md) for comprehensive instructions.
 
 ## 🧪 Testing
 - Frontend: `npm test` in `src/frontend`
@@ -70,7 +66,14 @@ CapstoneProject2/
 3. Push to the branch: `git push origin feature/your_feature`
 4. Open a Pull Request
 
-See `DEVELOPMENT_GUIDE.md` for coding standards and workflow.
+📋 **Project Management:** See our comprehensive project management documentation:
+## Required Reading
+- [Project Proposal](./docs/PROJECT_PROPOSAL.md) - Understand the project goals
+- [Development Guide](./docs/DEVELOPMENT_GUIDE.md) - Coding standards
+- [Project Management Plan](./docs/PROJECT_MANAGEMENT_PLAN.md) - Project Management Plan
+- [Implimentation Action Plan](./docs/IMPLEMENTATION_ACTION_PLAN.md) - Implimentation Action Plan
+- [GitHub Issues Template](./docs/GITHUB_ISSUES_TEMPLATE.md) - All project tasks
+- [Quick Setup](./docs/QUICK_SETUP.md) - Quick Steup Guide
 
 ## 📄 License
 This project is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
