@@ -6,7 +6,11 @@ This schema is designed for the NourishNet platform, supporting donors, recipien
 
 ## Entity Relationship Diagram (ERD)
 
+![ERD Diagram](./assets/ERD_Diagram.png)
+
 You can also view or edit the ERD directly in the file: [NourishNet_ERD.dbdiagram](./NourishNet_ERD.dbdiagram)
+
+Or view it online: [dbdiagram.io ERD](https://dbdiagram.io/d/68ccacb05779bb72652c3910)
 
 ```plaintext
 Table users {
