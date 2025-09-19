@@ -10,6 +10,7 @@ CREATE TABLE users (
     id_number TEXT,
     driving_licence_number TEXT,
     country TEXT,
+    phone_number TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

@@ -50,3 +50,15 @@ CREATE TABLE orders (
 CREATE INDEX idx_orders_request_id ON orders(request_id);
 CREATE INDEX idx_orders_donation_id ON orders(donation_id);
 CREATE INDEX idx_orders_status ON orders(status);
+
+-- Migration for Order Feedback table
+CREATE TABLE order_feedback (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+    feedback TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_order_feedback_order_id ON order_feedback(order_id);
+CREATE INDEX idx_order_feedback_user_id ON order_feedback(user_id);
