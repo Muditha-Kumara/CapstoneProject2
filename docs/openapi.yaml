@@ -1,0 +1,225 @@
+openapi: 3.0.3
+info:
+  title: NourishNet API
+  description: API specification for user management and request/donation flows
+  version: 1.0.0
+  contact:
+    name: Backend Team
+    email: backend@example.com
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+      required:
+        - id
+        - name
+        - email
+    Request:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        type:
+          type: string
+        status:
+          type: string
+      required:
+        - id
+        - userId
+        - type
+    Donation:
+      type: object
+      properties:
+        id:
+          type: integer
+        donorId:
+          type: integer
+        amount:
+          type: number
+        status:
+          type: string
+      required:
+        - id
+        - donorId
+        - amount
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      required:
+        - code
+        - message
+paths:
+  /users:
+    get:
+      tags:
+        - User Management
+      summary: Get all users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+              examples:
+                example:
+                  value:
+                    - id: 1
+                      name: John Doe
+                      email: john@example.com
+                      role: user
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                example:
+                  value:
+                    code: 401
+                    message: Unauthorized
+    post:
+      tags:
+        - User Management
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            examples:
+              example:
+                value:
+                  name: Jane Doe
+                  email: jane@example.com
+                  role: user
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /users/{id}:
+    get:
+      tags:
+        - User Management
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /requests:
+    get:
+      tags:
+        - Request Flow
+      summary: Get all requests
+      responses:
+        '200':
+          description: List of requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Request'
+    post:
+      tags:
+        - Request Flow
+      summary: Create a new request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Request'
+      responses:
+        '201':
+          description: Request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+  /donations:
+    get:
+      tags:
+        - Donation Flow
+      summary: Get all donations
+      responses:
+        '200':
+          description: List of donations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Donation'
+    post:
+      tags:
+        - Donation Flow
+      summary: Create a new donation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Donation'
+      responses:
+        '201':
+          description: Donation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Donation'
