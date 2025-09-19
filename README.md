@@ -71,9 +71,10 @@ CapstoneProject2/
 - [Project Proposal](./docs/PROJECT_PROPOSAL.md) - Understand the project goals
 - [Development Guide](./docs/DEVELOPMENT_GUIDE.md) - Coding standards
 - [Project Management Plan](./docs/PROJECT_MANAGEMENT_PLAN.md) - Project Management Plan
-- [Implimentation Action Plan](./docs/IMPLEMENTATION_ACTION_PLAN.md) - Implimentation Action Plan
+- [Implementation Action Plan](./docs/IMPLEMENTATION_ACTION_PLAN.md) - Implementation Action Plan
 - [GitHub Issues Template](./docs/GITHUB_ISSUES_TEMPLATE.md) - All project tasks
-- [Quick Setup](./docs/QUICK_SETUP.md) - Quick Steup Guide
+- [Quick Setup](./docs/QUICK_SETUP.md) - Quick Setup Guide
+- [Schema Documentation](./docs/SCHEMA_DOCUMENTATION.md) - Database schema and ERD
 
 ## 📄 License
 This project is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
