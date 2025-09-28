@@ -91,7 +91,7 @@ The backend uses Express and Swagger UI to provide interactive API documentation
    node app.js
    ```
 3. Access the API documentation at:
-   [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+   [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
 
 - The API specification is defined in [`docs/openapi.yaml`](./docs/openapi.yaml).
 - Update the OpenAPI file to keep documentation in sync with your endpoints.
