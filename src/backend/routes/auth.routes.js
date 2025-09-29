@@ -19,4 +19,14 @@ router.post(
 // Email verification route
 router.get('/verify-email', authController.verifyEmail);
 
+// Login route
+router.post(
+  '/login',
+  [
+    body('email').isEmail(),
+    body('password').isString().notEmpty()
+  ],
+  authController.login
+);
+
 module.exports = router;

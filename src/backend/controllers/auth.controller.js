@@ -1,4 +1,3 @@
-// ...existing code from previous auth.controller.js...
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
@@ -62,6 +61,48 @@ exports.verifyEmail = async (req, res) => {
     }
     await db.query('UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE id = $1', [user.rows[0].id]);
     res.status(200).json({ message: 'Email verified successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.login = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const { email, password } = req.body;
+  try {
+    const userResult = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    const user = userResult.rows[0];
+    if (!user.email_verified) {
+      return res.status(401).json({ message: 'Email not verified' });
+    }
+    const validPassword = await bcrypt.compare(password, user.password_hash);
+    if (!validPassword) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    // Generate JWT tokens
+    const accessToken = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: '7d' }
+    );
+    // Optionally, store refreshToken in DB or send as httpOnly cookie
+    res.status(200).json({
+      accessToken,
+      refreshToken,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
