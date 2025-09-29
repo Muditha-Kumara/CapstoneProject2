@@ -117,5 +117,10 @@ exports.login = async (req, res) => {
 exports.logout = async (req, res) => {
   // For stateless JWT, instruct client to delete tokens
   // If you store refresh tokens in DB, you can invalidate here
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production'
+  });
   res.status(204).json({ message: 'Logged out successfully' });
 };
