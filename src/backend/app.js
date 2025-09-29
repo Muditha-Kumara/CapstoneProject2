@@ -23,6 +23,10 @@ const authRoutes = require('./routes/auth.routes');
 app.use(express.json());
 app.use('/auth', authRoutes);
 
+// Protected routes
+const protectedRoutes = require('./routes/protected.routes');
+app.use('/protected', protectedRoutes);
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
