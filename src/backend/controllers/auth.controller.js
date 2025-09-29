@@ -187,3 +187,30 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.refreshToken = async (req, res) => {
+  try {
+    const token = req.cookies.refreshToken;
+    if (!token) {
+      return res.status(401).json({ message: 'No refresh token provided' });
+    }
+    jwt.verify(token, process.env.JWT_REFRESH_SECRET, async (err, payload) => {
+      if (err) return res.status(403).json({ message: 'Invalid refresh token' });
+      // Optionally, check if user still exists and is active
+      const userResult = await db.query('SELECT id, name, email, role FROM users WHERE id = $1', [payload.userId]);
+      if (userResult.rows.length === 0) {
+        return res.status(401).json({ message: 'User not found' });
+      }
+      const user = userResult.rows[0];
+      const accessToken = jwt.sign(
+        { userId: user.id, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '15m' }
+      );
+      res.status(200).json({ accessToken, user });
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

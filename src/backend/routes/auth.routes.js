@@ -48,4 +48,7 @@ router.post(
   authController.resetPassword
 );
 
+// Token refresh route
+router.post('/refresh-token', authController.refreshToken);
+
 module.exports = router;
