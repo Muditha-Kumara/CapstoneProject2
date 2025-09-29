@@ -65,7 +65,7 @@ exports.verifyEmail = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
-};
+};// Set refreshToken as httpOnly cookie
 
 exports.login = async (req, res) => {
   const errors = validationResult(req);
@@ -97,14 +97,25 @@ exports.login = async (req, res) => {
       process.env.JWT_REFRESH_SECRET,
       { expiresIn: '7d' }
     );
-    // Optionally, store refreshToken in DB or send as httpOnly cookie
+    // Set refreshToken as httpOnly cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
     res.status(200).json({
       accessToken,
-      refreshToken,
       user: { id: user.id, name: user.name, email: user.email, role: user.role }
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
+};
+
+exports.logout = async (req, res) => {
+  // For stateless JWT, instruct client to delete tokens
+  // If you store refresh tokens in DB, you can invalidate here
+  res.status(204).json({ message: 'Logged out successfully' });
 };
