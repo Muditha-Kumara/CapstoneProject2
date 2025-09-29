@@ -18,6 +18,11 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Authentication routes
+const authRoutes = require('./routes/auth.routes');
+app.use(express.json());
+app.use('/auth', authRoutes);
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
