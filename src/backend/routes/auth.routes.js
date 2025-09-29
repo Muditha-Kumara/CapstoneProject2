@@ -17,9 +17,9 @@ router.post(
   '/register',
   authLimiter,
   [
-    body('name').isString().notEmpty(),
-    body('email').isEmail(),
-    body('password').isLength({ min: 8 }),
+    body('name').isString().notEmpty().trim().escape(),
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 8 }).trim().escape(),
     body('role').isIn(['donor', 'recipient', 'provider', 'admin'])
   ],
   authController.register
@@ -33,8 +33,8 @@ router.post(
   '/login',
   authLimiter,
   [
-    body('email').isEmail(),
-    body('password').isString().notEmpty()
+    body('email').isEmail().normalizeEmail(),
+    body('password').isString().notEmpty().trim().escape()
   ],
   authController.login
 );
@@ -46,7 +46,7 @@ router.post('/logout', authLimiter, authController.logout);
 router.post(
   '/reset-password',
   authLimiter,
-  [body('email').isEmail()],
+  [body('email').isEmail().normalizeEmail()],
   authController.requestPasswordReset
 );
 // Password reset confirmation
@@ -54,8 +54,8 @@ router.post(
   '/reset-password/confirm',
   authLimiter,
   [
-    body('token').isString().notEmpty(),
-    body('password').isLength({ min: 8 })
+    body('token').isString().notEmpty().trim().escape(),
+    body('password').isLength({ min: 8 }).trim().escape()
   ],
   authController.resetPassword
 );
