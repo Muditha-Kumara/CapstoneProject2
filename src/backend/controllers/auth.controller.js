@@ -124,3 +124,66 @@ exports.logout = async (req, res) => {
   });
   res.status(204).json({ message: 'Logged out successfully' });
 };
+
+exports.requestPasswordReset = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const { email } = req.body;
+  try {
+    const userResult = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) {
+      // Do not reveal if user exists
+      return res.status(200).json({ message: 'If the email exists, a reset link has been sent.' });
+    }
+    const user = userResult.rows[0];
+    const resetToken = uuidv4();
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await db.query(
+      'UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE id = $3',
+      [resetToken, expires, user.id]
+    );
+    const resetUrl = `${process.env.BASE_URL}/reset-password/confirm?token=${resetToken}`;
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset',
+      html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`
+    });
+    res.status(200).json({ message: 'If the email exists, a reset link has been sent.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const { token, password } = req.body;
+  try {
+    const userResult = await db.query(
+      'SELECT id, reset_password_expires FROM users WHERE reset_password_token = $1',
+      [token]
+    );
+    if (userResult.rows.length === 0) {
+      return res.status(400).json({ message: 'Invalid or expired token' });
+    }
+    const user = userResult.rows[0];
+    if (user.reset_password_expires < new Date()) {
+      return res.status(400).json({ message: 'Token expired' });
+    }
+    const password_hash = await bcrypt.hash(password, 10);
+    await db.query(
+      'UPDATE users SET password_hash = $1, reset_password_token = NULL, reset_password_expires = NULL WHERE id = $2',
+      [password_hash, user.id]
+    );
+    res.status(200).json({ message: 'Password reset successful' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

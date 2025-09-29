@@ -32,4 +32,20 @@ router.post(
 // Logout route
 router.post('/logout', authController.logout);
 
+// Password reset request
+router.post(
+  '/reset-password',
+  [body('email').isEmail()],
+  authController.requestPasswordReset
+);
+// Password reset confirmation
+router.post(
+  '/reset-password/confirm',
+  [
+    body('token').isString().notEmpty(),
+    body('password').isLength({ min: 8 })
+  ],
+  authController.resetPassword
+);
+
 module.exports = router;
