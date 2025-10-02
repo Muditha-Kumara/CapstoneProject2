@@ -96,6 +96,12 @@ The backend uses Express and Swagger UI to provide interactive API documentation
 - The API specification is defined in [`docs/openapi.yaml`](./docs/openapi.yaml).
 - Update the OpenAPI file to keep documentation in sync with your endpoints.
 
+## 🗄️ Database Migrations & Seeding
+- Database migrations in `database/migrations` and seeders in `database/seeders` are automatically run by Postgres when the container is first created.
+- **Order matters:** Migration scripts should be numbered lower than seed scripts (e.g., `001_create_...`, `002_...`, then `100_seed_...`).
+- To re-seed the database in development, use Adminer or psql to run the seed scripts in `database/seeders`.
+- See `database/seeders/999_dev_reseed.sql` for a template to help with manual reseeding during development.
+
 ## 📄 License
 This project is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
