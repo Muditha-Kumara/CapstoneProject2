@@ -7,8 +7,6 @@
     "start": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "format": "prettier --write .",
     "test": "echo 'No tests yet'"
   },
   "dependencies": {},
