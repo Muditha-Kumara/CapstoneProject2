@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
+  # PostgreSQL Database (with migrations and seeders)
   db:
     image: postgres:15
     container_name: nourishnet_db
@@ -14,13 +14,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/migrations:/docker-entrypoint-initdb.d
+      - ./database/seeders:/docker-entrypoint-initdb-seed.d # For seed scripts
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Backend API (Node.js)
+  # Backend API (Node.js, hot reload with nodemon)
   backend:
     build: 
       context: ./src/backend
@@ -47,7 +48,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # Frontend React App
+  # Frontend React App (hot reload with Vite)
   frontend:
     build:
       context: ./src/frontend
@@ -67,7 +68,7 @@ services:
     stdin_open: true
     tty: true
 
-  # Redis for session management and caching
+  # Redis for session management and caching (optional)
   redis:
     image: redis:7-alpine
     container_name: nourishnet_redis
