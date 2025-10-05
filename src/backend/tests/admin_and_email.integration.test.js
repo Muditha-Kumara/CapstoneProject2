@@ -1,18 +1,16 @@
 const request = require('supertest');
-const app = require('../src/backend/app');
+const app = require('../app');
 
 describe('Admin & Email Verification Integration', () => {
   let adminToken, adminEmailToken;
 
   it('should register a new admin user', async () => {
-    const res = await request(app)
-      .post('/auth/register')
-      .send({
-        name: 'Admin User',
-        email: 'admin@example.com',
-        password: 'AdminPassword123',
-        role: 'admin'
-      });
+    const res = await request(app).post('/auth/register').send({
+      name: 'Admin User',
+      email: 'admin@example.com',
+      password: 'AdminPassword123',
+      role: 'admin',
+    });
     expect(res.statusCode).toBe(201);
     expect(res.body.message).toMatch(/Registration successful/i);
     // Simulate fetching the verification token from DB (mock or direct DB call in real test)
@@ -20,12 +18,10 @@ describe('Admin & Email Verification Integration', () => {
   });
 
   it('should not login before email verification', async () => {
-    const res = await request(app)
-      .post('/auth/login')
-      .send({
-        email: 'admin@example.com',
-        password: 'AdminPassword123'
-      });
+    const res = await request(app).post('/auth/login').send({
+      email: 'admin@example.com',
+      password: 'AdminPassword123',
+    });
     expect(res.statusCode).toBe(401);
     expect(res.body.message).toMatch(/email not verified/i);
   });
