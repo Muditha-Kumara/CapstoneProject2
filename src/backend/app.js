@@ -8,7 +8,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Load OpenAPI spec
-const swaggerDocument = YAML.load(path.join(__dirname, '../../docs/openapi.yaml'));
+const swaggerDocument = YAML.load(
+  path.join(__dirname, '../../docs/openapi.yaml')
+);
 
 // Swagger UI route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -27,8 +29,4 @@ app.use('/auth', authRoutes);
 const protectedRoutes = require('./routes/protected.routes');
 app.use('/protected', protectedRoutes);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
-});
+module.exports = app;
