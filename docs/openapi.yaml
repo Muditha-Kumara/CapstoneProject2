@@ -7,9 +7,9 @@ info:
     name: Backend Team
     email: backend@example.com
 servers:
-  - url: http://localhost:5000/api
+  - url: http://localhost:5000
     description: Local development server (host access)
-  - url: http://backend:5000/api
+  - url: http://backend:5000
     description: Docker Compose internal network
 security:
   - bearerAuth: []
