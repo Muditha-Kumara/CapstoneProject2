@@ -14,7 +14,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/migrations:/docker-entrypoint-initdb.d
-      - ./database/seeders:/docker-entrypoint-initdb-seed.d # For seed scripts
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -36,8 +35,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./src/backend:/app
-      - /app/node_modules
+      - ./docs/openapi.yaml:/docs/openapi.yaml
     depends_on:
       db:
         condition: service_healthy
