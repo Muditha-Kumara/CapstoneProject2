@@ -7,7 +7,7 @@ info:
     name: Backend Team
     email: backend@example.com
 servers:
-  - url: http://localhost:3000/api
+  - url: http://localhost:5000/api
     description: Local development server
 security:
   - bearerAuth: []
