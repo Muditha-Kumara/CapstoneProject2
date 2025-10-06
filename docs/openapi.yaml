@@ -8,7 +8,9 @@ info:
     email: backend@example.com
 servers:
   - url: http://localhost:5000/api
-    description: Local development server
+    description: Local development server (host access)
+  - url: http://backend:5000/api
+    description: Docker Compose internal network
 security:
   - bearerAuth: []
 components:
