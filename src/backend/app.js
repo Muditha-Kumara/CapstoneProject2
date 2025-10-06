@@ -3,6 +3,7 @@ const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,6 +24,7 @@ app.get('/health', (req, res) => {
 // Authentication routes
 const authRoutes = require('./routes/auth.routes');
 app.use(express.json());
+app.use(cookieParser());
 app.use('/auth', authRoutes);
 
 // Protected routes
