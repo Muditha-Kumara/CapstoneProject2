@@ -84,7 +84,7 @@ describe('Auth Controller Unit Tests', () => {
       };
     });
 
-    it('should register a new user successfully', async () => {
+    it('1. should register a new user successfully', async () => {
       // Mock user doesn't exist
       db.query.mockResolvedValueOnce({ rows: [] });
 
@@ -122,7 +122,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 400 if validation fails', async () => {
+    it('2. should return 400 if validation fails', async () => {
       validationResult.mockReturnValue({
         isEmpty: () => false,
         array: () => [{ msg: 'Invalid email' }],
@@ -136,7 +136,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 400 if email already exists', async () => {
+    it('3. should return 400 if email already exists', async () => {
       db.query.mockResolvedValueOnce({ rows: [{ id: 1 }] });
 
       await authController.register(req, res);
@@ -147,7 +147,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 500 on server error', async () => {
+    it('4. should return 500 on server error', async () => {
       db.query.mockRejectedValue(new Error('Database error'));
 
       await authController.register(req, res);
@@ -160,7 +160,7 @@ describe('Auth Controller Unit Tests', () => {
   });
 
   describe('verifyEmail', () => {
-    it('should verify email successfully', async () => {
+    it('5. should verify email successfully', async () => {
       req.query.token = 'valid-token';
       db.query
         .mockResolvedValueOnce({ rows: [{ id: 1 }] })
@@ -182,7 +182,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 400 if token is invalid', async () => {
+    it('6. should return 400 if token is invalid', async () => {
       req.query.token = 'invalid-token';
       db.query.mockResolvedValueOnce({ rows: [] });
 
@@ -194,7 +194,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 500 on server error', async () => {
+    it('7. should return 500 on server error', async () => {
       req.query.token = 'valid-token';
       db.query.mockRejectedValue(new Error('Database error'));
 
@@ -224,7 +224,7 @@ describe('Auth Controller Unit Tests', () => {
       };
     });
 
-    it('should login successfully and return tokens', async () => {
+    it('8. should login successfully and return tokens', async () => {
       db.query.mockResolvedValueOnce({ rows: [mockUser] });
       bcrypt.compare.mockResolvedValue(true);
       jwt.sign
@@ -269,7 +269,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 400 if validation fails', async () => {
+    it('9. should return 400 if validation fails', async () => {
       validationResult.mockReturnValue({
         isEmpty: () => false,
         array: () => [{ msg: 'Invalid email' }],
@@ -283,7 +283,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 401 if user not found', async () => {
+    it('10. should return 401 if user not found', async () => {
       db.query.mockResolvedValueOnce({ rows: [] });
 
       await authController.login(req, res);
@@ -294,7 +294,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 401 if email not verified', async () => {
+    it('11. should return 401 if email not verified', async () => {
       db.query.mockResolvedValueOnce({
         rows: [{ ...mockUser, email_verified: false }],
       });
@@ -307,7 +307,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 401 if password is invalid', async () => {
+    it('12. should return 401 if password is invalid', async () => {
       db.query.mockResolvedValueOnce({ rows: [mockUser] });
       bcrypt.compare.mockResolvedValue(false);
 
@@ -319,7 +319,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 500 on server error', async () => {
+    it('13. should return 500 on server error', async () => {
       db.query.mockRejectedValue(new Error('Database error'));
 
       await authController.login(req, res);
@@ -332,7 +332,7 @@ describe('Auth Controller Unit Tests', () => {
   });
 
   describe('logout', () => {
-    it('should logout successfully and clear cookie', async () => {
+    it('14. should logout successfully and clear cookie', async () => {
       await authController.logout(req, res);
 
       expect(res.clearCookie).toHaveBeenCalledWith('refreshToken', {
@@ -354,7 +354,7 @@ describe('Auth Controller Unit Tests', () => {
       };
     });
 
-    it('should send password reset email successfully', async () => {
+    it('15. should send password reset email successfully', async () => {
       db.query
         .mockResolvedValueOnce({ rows: [{ id: 1 }] })
         .mockResolvedValueOnce({ rows: [] });
@@ -378,7 +378,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 400 if validation fails', async () => {
+    it('16. should return 400 if validation fails', async () => {
       validationResult.mockReturnValue({
         isEmpty: () => false,
         array: () => [{ msg: 'Invalid email' }],
@@ -392,7 +392,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return generic message if user not found', async () => {
+    it('17. should return generic message if user not found', async () => {
       db.query.mockResolvedValueOnce({ rows: [] });
 
       await authController.requestPasswordReset(req, res);
@@ -403,7 +403,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 500 on server error', async () => {
+    it('18. should return 500 on server error', async () => {
       db.query.mockRejectedValue(new Error('Database error'));
 
       await authController.requestPasswordReset(req, res);
@@ -423,7 +423,7 @@ describe('Auth Controller Unit Tests', () => {
       };
     });
 
-    it('should reset password successfully', async () => {
+    it('19. should reset password successfully', async () => {
       const futureDate = new Date(Date.now() + 3600000);
       db.query
         .mockResolvedValueOnce({
@@ -450,7 +450,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 400 if validation fails', async () => {
+    it('20. should return 400 if validation fails', async () => {
       validationResult.mockReturnValue({
         isEmpty: () => false,
         array: () => [{ msg: 'Password too short' }],
@@ -464,7 +464,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 400 if token is invalid', async () => {
+    it('21. should return 400 if token is invalid', async () => {
       db.query.mockResolvedValueOnce({ rows: [] });
 
       await authController.resetPassword(req, res);
@@ -475,7 +475,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 400 if token is expired', async () => {
+    it('22. should return 400 if token is expired', async () => {
       const pastDate = new Date(Date.now() - 3600000);
       db.query.mockResolvedValueOnce({
         rows: [{ id: 1, reset_password_expires: pastDate }],
@@ -489,7 +489,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 500 on server error', async () => {
+    it('23. should return 500 on server error', async () => {
       db.query.mockRejectedValue(new Error('Database error'));
 
       await authController.resetPassword(req, res);
@@ -509,7 +509,7 @@ describe('Auth Controller Unit Tests', () => {
       role: 'donor',
     };
 
-    it('should refresh access token successfully', async () => {
+    it('24. should refresh access token successfully', async () => {
       req.cookies.refreshToken = 'valid-refresh-token';
 
       jwt.verify.mockImplementation((token, secret, callback) => {
@@ -542,7 +542,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 401 if no refresh token provided', async () => {
+    it('25. should return 401 if no refresh token provided', async () => {
       req.cookies.refreshToken = undefined;
 
       await authController.refreshToken(req, res);
@@ -553,7 +553,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 403 if refresh token is invalid', async () => {
+    it('26. should return 403 if refresh token is invalid', async () => {
       req.cookies.refreshToken = 'invalid-token';
 
       jwt.verify.mockImplementation((token, secret, callback) => {
@@ -568,7 +568,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should return 401 if user not found', async () => {
+    it('27. should return 401 if user not found', async () => {
       req.cookies.refreshToken = 'valid-refresh-token';
 
       jwt.verify.mockImplementation((token, secret, callback) => {
@@ -585,7 +585,7 @@ describe('Auth Controller Unit Tests', () => {
       });
     });
 
-    it('should handle database error in jwt callback', async () => {
+    it('28. should handle database error in jwt callback', async () => {
       req.cookies.refreshToken = 'valid-refresh-token';
 
       // Mock jwt.verify to call callback with error from db query
