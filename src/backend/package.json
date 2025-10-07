@@ -35,7 +35,7 @@
   "jest": {
     "testEnvironment": "node",
     "testMatch": [
-      "**/tests/**/auth*.test.js"
+      "**/tests/**/*unit*.test.js"
     ]
   }
 }

@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
-const db = require('../db'); // Assumes you have a db module for queries
+const db = require('../db');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -11,9 +11,10 @@ const transporter = nodemailer.createTransport({
   service: 'gmail', // Change as needed
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+    pass: process.env.EMAIL_PASS,
+  },
 });
+exports.transporter = transporter;
 
 exports.register = async (req, res) => {
   // Input validation
@@ -24,7 +25,9 @@ exports.register = async (req, res) => {
   const { name, email, password, role } = req.body;
   try {
     // Check if user exists
-    const userExists = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+    const userExists = await db.query('SELECT id FROM users WHERE email = $1', [
+      email,
+    ]);
     if (userExists.rows.length > 0) {
       return res.status(400).json({ message: 'Email already registered' });
     }
@@ -43,9 +46,14 @@ exports.register = async (req, res) => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: 'Verify your email',
-      html: `<p>Click <a href="${verifyUrl}">here</a> to verify your email.</p>`
+      html: `<p>Click <a href="${verifyUrl}">here</a> to verify your email.</p>`,
     });
-    res.status(201).json({ message: 'Registration successful. Please check your email to verify your account.' });
+    res
+      .status(201)
+      .json({
+        message:
+          'Registration successful. Please check your email to verify your account.',
+      });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -55,17 +63,23 @@ exports.register = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
   const { token } = req.query;
   try {
-    const user = await db.query('SELECT id FROM users WHERE verification_token = $1', [token]);
+    const user = await db.query(
+      'SELECT id FROM users WHERE verification_token = $1',
+      [token]
+    );
     if (user.rows.length === 0) {
       return res.status(400).json({ message: 'Invalid or expired token' });
     }
-    await db.query('UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE id = $1', [user.rows[0].id]);
+    await db.query(
+      'UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE id = $1',
+      [user.rows[0].id]
+    );
     res.status(200).json({ message: 'Email verified successfully' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
-};// Set refreshToken as httpOnly cookie
+}; // Set refreshToken as httpOnly cookie
 
 exports.login = async (req, res) => {
   const errors = validationResult(req);
@@ -74,7 +88,9 @@ exports.login = async (req, res) => {
   }
   const { email, password } = req.body;
   try {
-    const userResult = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    const userResult = await db.query('SELECT * FROM users WHERE email = $1', [
+      email,
+    ]);
     if (userResult.rows.length === 0) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -102,11 +118,16 @@ exports.login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     res.status(200).json({
       accessToken,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (err) {
     console.error(err);
@@ -120,7 +141,7 @@ exports.logout = async (req, res) => {
   res.clearCookie('refreshToken', {
     httpOnly: true,
     sameSite: 'strict',
-    secure: process.env.NODE_ENV === 'production'
+    secure: process.env.NODE_ENV === 'production',
   });
   res.status(204).json({ message: 'Logged out successfully' });
 };
@@ -132,10 +153,14 @@ exports.requestPasswordReset = async (req, res) => {
   }
   const { email } = req.body;
   try {
-    const userResult = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+    const userResult = await db.query('SELECT id FROM users WHERE email = $1', [
+      email,
+    ]);
     if (userResult.rows.length === 0) {
       // Do not reveal if user exists
-      return res.status(200).json({ message: 'If the email exists, a reset link has been sent.' });
+      return res
+        .status(200)
+        .json({ message: 'If the email exists, a reset link has been sent.' });
     }
     const user = userResult.rows[0];
     const resetToken = uuidv4();
@@ -149,9 +174,11 @@ exports.requestPasswordReset = async (req, res) => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: 'Password Reset',
-      html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`
+      html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`,
     });
-    res.status(200).json({ message: 'If the email exists, a reset link has been sent.' });
+    res
+      .status(200)
+      .json({ message: 'If the email exists, a reset link has been sent.' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -195,9 +222,13 @@ exports.refreshToken = async (req, res) => {
       return res.status(401).json({ message: 'No refresh token provided' });
     }
     jwt.verify(token, process.env.JWT_REFRESH_SECRET, async (err, payload) => {
-      if (err) return res.status(403).json({ message: 'Invalid refresh token' });
+      if (err)
+        return res.status(403).json({ message: 'Invalid refresh token' });
       // Optionally, check if user still exists and is active
-      const userResult = await db.query('SELECT id, name, email, role FROM users WHERE id = $1', [payload.userId]);
+      const userResult = await db.query(
+        'SELECT id, name, email, role FROM users WHERE id = $1',
+        [payload.userId]
+      );
       if (userResult.rows.length === 0) {
         return res.status(401).json({ message: 'User not found' });
       }
