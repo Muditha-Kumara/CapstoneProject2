@@ -1,9 +1,11 @@
 -- Example seed data for development and testing
 -- Users
-INSERT INTO users (id, name, email, password_hash, role, balance) VALUES
-    (gen_random_uuid(), 'Alice Donor', 'alice@example.com', 'hashed_pw1', 'donor', 100.00),
-    (gen_random_uuid(), 'Bob Recipient', 'bob@example.com', 'hashed_pw2', 'recipient', 0.00),
-    (gen_random_uuid(), 'Carol Provider', 'carol@example.com', 'hashed_pw3', 'provider', 0.00);
+INSERT INTO users (id, name, email, password_hash, role, balance, email_verified) VALUES
+    (gen_random_uuid(), 'Verified User', 'nourishnetworld@gmail.com', '$2b$10$upQLo0xNScfLEgRwVXG4Fe1BWqT88ZqrgGQBpQTrJN2xuZ3dnN91G', 'donor', 1000.00, TRUE),
+    (gen_random_uuid(), 'test10', 'test10@gmail.com', '$2b$10$upQLo0xNScfLEgRwVXG4Fe1BWqT88ZqrgGQBpQTrJN2xuZ3dnN91G', 'admin', 500.00, TRUE),
+    (gen_random_uuid(), 'Alice Donor', 'verified@example.com', 'hashed_pw1', 'donor', 100.00, TRUE),
+    (gen_random_uuid(), 'Bob Recipient', 'bob@example.com', 'hashed_pw2', 'recipient', 0.00, false),
+    (gen_random_uuid(), 'Carol Provider', 'carol@example.com', 'hashed_pw3', 'provider', 0.00, TRUE);
 
 -- Food Providers
 INSERT INTO food_providers (id, user_id, name, address, contact_info) VALUES

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "test": "jest"
+    "test": "dotenv -e .env.test -- jest"
   },
   "keywords": [],
   "author": "",
