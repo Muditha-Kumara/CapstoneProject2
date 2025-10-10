@@ -48,12 +48,10 @@ exports.register = async (req, res) => {
       subject: 'Verify your email',
       html: `<p>Click <a href="${verifyUrl}">here</a> to verify your email.</p>`,
     });
-    res
-      .status(201)
-      .json({
-        message:
-          'Registration successful. Please check your email to verify your account.',
-      });
+    res.status(201).json({
+      message:
+        'Registration successful. Please check your email to verify your account.',
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -243,5 +241,36 @@ exports.refreshToken = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get authenticated user's profile
+exports.getUserProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const result = await db.query(
+      'SELECT * FROM users WHERE id = $1 AND deleted_at IS NULL',
+      [userId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const user = result.rows[0];
+    res.json({
+      profile: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        balance: user.balance,
+        verified: user.verified,
+        avatar_url: user.avatar_url,
+        preferences: user.preferences,
+      },
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error fetching profile', error: error.message });
   }
 };
