@@ -2,6 +2,7 @@ const express = require('express');
 const { body } = require('express-validator');
 const authController = require('../controllers/auth.controller');
 const rateLimit = require('express-rate-limit');
+const { authenticateJWT } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ const router = express.Router();
 const authLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // limit each IP to 10 requests per windowMs
-  message: { message: 'Too many requests, please try again later.' }
+  message: { message: 'Too many requests, please try again later.' },
 });
 
 // Registration route
@@ -20,7 +21,7 @@ router.post(
     body('name').isString().notEmpty().trim().escape(),
     body('email').isEmail().normalizeEmail(),
     body('password').isLength({ min: 8 }).trim().escape(),
-    body('role').isIn(['donor', 'recipient', 'provider', 'admin'])
+    body('role').isIn(['donor', 'recipient', 'provider', 'admin']),
   ],
   authController.register
 );
@@ -34,7 +35,7 @@ router.post(
   authLimiter,
   [
     body('email').isEmail().normalizeEmail(),
-    body('password').isString().notEmpty().trim().escape()
+    body('password').isString().notEmpty().trim().escape(),
   ],
   authController.login
 );
@@ -55,12 +56,25 @@ router.post(
   authLimiter,
   [
     body('token').isString().notEmpty().trim().escape(),
-    body('password').isLength({ min: 8 }).trim().escape()
+    body('password').isLength({ min: 8 }).trim().escape(),
   ],
   authController.resetPassword
 );
 
 // Token refresh route
 router.post('/refresh-token', authLimiter, authController.refreshToken);
+
+// Update user profile
+router.put(
+  '/users/profile',
+  authenticateJWT,
+  [
+    body('name').optional().isString().trim().notEmpty().escape(),
+    body('email').optional().isEmail().normalizeEmail(),
+    body('avatar_url').optional().isString().trim(),
+    body('balance').optional().isFloat({ min: 0 }),
+  ],
+  authController.updateUserProfile
+);
 
 module.exports = router;

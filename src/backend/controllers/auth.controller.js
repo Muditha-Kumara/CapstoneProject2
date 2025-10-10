@@ -274,3 +274,48 @@ exports.getUserProfile = async (req, res) => {
       .json({ message: 'Error fetching profile', error: error.message });
   }
 };
+
+exports.updateUserProfile = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const userId = req.user.id;
+  const { name, email, avatar_url, balance } = req.body;
+  try {
+    // Build dynamic update query
+    const fields = [];
+    const values = [];
+    let idx = 1;
+    if (name) {
+      fields.push(`name = $${idx++}`);
+      values.push(name);
+    }
+    if (email) {
+      fields.push(`email = $${idx++}`);
+      values.push(email);
+    }
+    if (avatar_url) {
+      fields.push(`avatar_url = $${idx++}`);
+      values.push(avatar_url);
+    }
+    if (balance !== undefined) {
+      fields.push(`balance = $${idx++}`);
+      values.push(balance);
+    }
+    if (fields.length === 0) {
+      return res.status(400).json({ message: 'No valid fields to update' });
+    }
+    values.push(userId);
+    const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING id, name, email, role, balance, verified, avatar_url, preferences`;
+    const result = await db.query(query, values);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ profile: result.rows[0] });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error updating profile', error: error.message });
+  }
+};
