@@ -3,6 +3,7 @@ const { body } = require('express-validator');
 const authController = require('../controllers/auth.controller');
 const rateLimit = require('express-rate-limit');
 const { authenticateJWT } = require('../middleware/auth');
+const multer = require('multer');
 
 const router = express.Router();
 
@@ -11,6 +12,18 @@ const authLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // limit each IP to 10 requests per windowMs
   message: { message: 'Too many requests, please try again later.' },
+});
+
+// Multer configuration for file uploads
+const upload = multer({
+  dest: 'uploads/avatars/',
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed'), false);
+    }
+    cb(null, true);
+  },
 });
 
 // Registration route
@@ -75,6 +88,14 @@ router.put(
     body('balance').optional().isFloat({ min: 0 }),
   ],
   authController.updateUserProfile
+);
+
+// Upload user avatar
+router.post(
+  '/users/avatar',
+  authenticateJWT,
+  upload.single('avatar'),
+  authController.uploadUserAvatar
 );
 
 module.exports = router;

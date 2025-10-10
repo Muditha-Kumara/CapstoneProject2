@@ -319,3 +319,25 @@ exports.updateUserProfile = async (req, res) => {
       .json({ message: 'Error updating profile', error: error.message });
   }
 };
+
+exports.uploadUserAvatar = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+  const userId = req.user.id;
+  const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+  try {
+    const result = await db.query(
+      'UPDATE users SET avatar_url = $1 WHERE id = $2 RETURNING id, name, email, role, balance, verified, avatar_url, preferences',
+      [avatarUrl, userId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ profile: result.rows[0], avatarUrl });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error uploading avatar', error: error.message });
+  }
+};
