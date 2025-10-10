@@ -98,4 +98,11 @@ router.post(
   authController.uploadUserAvatar
 );
 
+// Delete user account (soft delete)
+router.delete(
+  '/users/account',
+  authenticateJWT,
+  authController.deleteUserAccount
+);
+
 module.exports = router;

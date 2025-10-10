@@ -364,3 +364,23 @@ exports.updateUserPreferences = async (req, res) => {
       .json({ message: 'Error updating preferences', error: error.message });
   }
 };
+
+exports.deleteUserAccount = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const result = await db.query(
+      'UPDATE users SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id',
+      [userId]
+    );
+    if (result.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: 'User not found or already deleted' });
+    }
+    res.json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error deleting account', error: error.message });
+  }
+};
