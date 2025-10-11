@@ -1,0 +1,13 @@
+{
+  "messages": [],
+  "users": [
+    {
+      "id": 1,
+      "email": "demo@nourish.net",
+      "password": "demo",
+      "firstName": "Demo",
+      "lastName": "User",
+      "role": "donor"
+    }
+  ]
+}
