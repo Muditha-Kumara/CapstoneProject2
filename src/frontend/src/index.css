@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-primary: #13795B;
+  --brand-accent: #F59E0B;
+  --brand-surface: #FFF9F0;
+  --brand-text: #0F172A;
+  --brand-muted: #64748B;
+}
+
+.brand-primary { background-color: var(--brand-primary); }
+.brand-accent { background-color: var(--brand-accent); }
+.brand-surface { background-color: var(--brand-surface); }
+.text-brand { color: var(--brand-text); }
+.text-brand-muted { color: var(--brand-muted); }
+.border-brand { border-color: var(--brand-primary); }
+.text-brand-primary { color: var(--brand-primary); }
