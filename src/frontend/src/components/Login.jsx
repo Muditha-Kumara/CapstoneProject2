@@ -32,6 +32,7 @@ export default function Login({ open, onClose }){
       e.target.reset()
       setRole('');
     }catch(err){
+      // Always display the error message from api.js
       setMsg({type:'err', text: err.message})
     }finally{ setLoading(false) }
   }
