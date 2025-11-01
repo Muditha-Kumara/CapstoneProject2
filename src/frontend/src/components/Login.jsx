@@ -1,10 +1,18 @@
 import { useState } from 'react'
 import { api } from '../lib/api'
 
+const ROLES = [
+  { value: '', label: 'I am a…' },
+  { value: 'donor', label: 'Donor' },
+  { value: 'trusted-adult', label: 'Trusted Adult' },
+  { value: 'provider', label: 'Food Provider' },
+];
+
 export default function Login({ open, onClose }){
   const [mode, setMode] = useState('login')
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState(null)
+  const [role, setRole] = useState('');
 
   if (!open) return null;
 
@@ -15,12 +23,14 @@ export default function Login({ open, onClose }){
 
     const form = new FormData(e.target)
     const payload = Object.fromEntries(form.entries())
+    if (mode === 'signup') payload.role = role;
 
     try{
       if(mode==='signup') await api.signup(payload)
       else await api.login(payload)
       setMsg({type:'ok', text: mode==='signup' ? 'Account created!' : 'Logged in!'})
       e.target.reset()
+      setRole('');
     }catch(err){
       setMsg({type:'err', text: err.message})
     }finally{ setLoading(false) }
@@ -50,12 +60,28 @@ export default function Login({ open, onClose }){
             <input type="email" name="email" placeholder="Email" className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-200" required />
             <input type="password" name="password" placeholder="Password" className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-200" required />
             {mode==='signup' && (
-              <select name="role" className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:ring-2 focus:ring-yellow-200" required>
-                <option value="">I am a…</option>
-                <option value="donor">Donor</option>
-                <option value="trusted-adult">Trusted Adult</option>
-                <option value="provider">Food Provider</option>
-              </select>
+              <div className="relative">
+                <button
+                  type="button"
+                  className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center"
+                  onClick={() => setRole(role === '' ? ROLES[0].value : '')}
+                  tabIndex={0}
+                >
+                  {ROLES.find(r => r.value === role)?.label || ROLES[0].label}
+                  <span className="ml-2">▼</span>
+                </button>
+                <div className="absolute left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10" style={{ display: role === '' ? 'block' : 'none' }}>
+                  {ROLES.slice(1).map(r => (
+                    <div
+                      key={r.value}
+                      className="px-4 py-2 cursor-pointer hover:bg-green-100"
+                      onClick={() => setRole(r.value)}
+                    >
+                      {r.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
             <button disabled={loading} className="w-full py-3 font-bold text-lg rounded-lg transition duration-200 shadow-md bg-green-600 text-white hover:bg-green-700 hover:scale-105 disabled:opacity-60">{loading? 'Please wait…' : (mode==='login' ? 'Sign In' : 'Create Account')}</button>
             {msg && <p className={`mt-2 text-center font-semibold transition-all duration-500 ${msg.type==='ok' ? 'text-green-700 animate-bounce' : 'text-red-600 animate-shake'}`}>{msg.text}</p>}
