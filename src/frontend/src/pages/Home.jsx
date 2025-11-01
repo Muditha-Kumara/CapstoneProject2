@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Modal from '../components/Modal';
+import Login from '../components/Login';
 
 // --- Data Definitions for Reusability ---
 
@@ -154,7 +155,7 @@ export default function Home() {
     <div>
       <HeroSection
         onRequestFood={() => setIsModalOpen(true)}
-        onDonate={handleDonateClick}
+        onDonate={() => setIsModalOpen(true)}
       />
 
       {/* Impact and Donation Promotion Section */}
@@ -177,7 +178,7 @@ export default function Home() {
         <div className="mt-12 p-8 bg-green-50 rounded-xl shadow-lg">
           <h3 className="text-2xl font-semibold text-green-800">Help us reach 100% funding and nourish more children today.</h3>
           <p className="text-gray-600 mt-2">Every meal counts. Join our active community of 2,341 donors.</p>
-          <button onClick={handleDonateClick} className="mt-6 px-8 py-4 rounded-xl font-bold text-white text-lg bg-orange-500 hover:bg-orange-600 transition duration-300 shadow-xl transform hover:scale-105">
+          <button onClick={() => setIsModalOpen(true)} className="mt-6 px-8 py-4 rounded-xl font-bold text-white text-lg bg-orange-500 hover:bg-orange-600 transition duration-300 shadow-xl transform hover:scale-105">
             Donate Now and Track Your Impact
           </button>
         </div>
@@ -197,10 +198,7 @@ export default function Home() {
         </div>
       </section>
 
-      <RequestFoodModal
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      <Login open={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

@@ -5,7 +5,7 @@ import Home from './pages/Home'
 import How from './pages/How'
 import About from './pages/About'
 import Contact from './pages/Contact'
-import Login from './pages/Login'
+import Login from './components/Login'
 
 export default function App() {
   return (
