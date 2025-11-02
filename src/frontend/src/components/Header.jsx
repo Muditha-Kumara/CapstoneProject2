@@ -1,6 +1,11 @@
 import { Link, NavLink } from 'react-router-dom'
+import { useEffect } from 'react'
 
-export default function Header(){
+export default function Header({ user, onLoginClick }){
+  useEffect(() => {
+    console.log('user changed', user);
+  }, [user]);
+
   return (
     <header className="sticky top-0 bg-white/90 backdrop-blur border-b z-10">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -13,7 +18,11 @@ export default function Header(){
           <NavLink to="/how" className={({isActive})=> isActive? 'text-green-700' : 'hover:text-green-700'}>How It Works</NavLink>
           <NavLink to="/about" className={({isActive})=> isActive? 'text-green-700' : 'hover:text-green-700'}>About</NavLink>
           <NavLink to="/contact" className={({isActive})=> isActive? 'text-green-700' : 'hover:text-green-700'}>Contact</NavLink>
-          <NavLink to="/login" className={({isActive})=> isActive? 'text-green-700' : 'hover:text-green-700'}>Login / Signup</NavLink>
+          {user && user.email ? (
+            <span className="ml-4 font-bold text-green-700">{user.email}</span>
+          ) : (
+            <button type="button" onClick={onLoginClick} className="ml-4 px-4 py-2 rounded bg-green-600 text-white font-bold hover:bg-green-700">Login / Signup</button>
+          )}
         </nav>
       </div>
     </header>

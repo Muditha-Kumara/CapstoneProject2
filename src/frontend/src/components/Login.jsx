@@ -8,7 +8,7 @@ const ROLES = [
   { value: 'provider', label: 'Food Provider' },
 ];
 
-export default function Login({ open, onClose }){
+export default function Login({ open, onClose, onSuccess }){
   const [mode, setMode] = useState('login')
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState(null)
@@ -34,13 +34,19 @@ export default function Login({ open, onClose }){
     }
 
     try{
-      if(mode==='signup') await api.signup(payload)
-      else await api.login(payload)
+      let result;
+      if(mode==='signup') result = await api.signup(payload)
+      else result = await api.login(payload)
       setMsg({type:'ok', text: mode==='signup' ? 'Account created!' : 'Logged in!'})
       e.target.reset()
       setRole('');
+      if (result && result.user && result.user.email) {
+        console.log('Calling onSuccess with:', result.user);
+        onSuccess(result.user);
+        console.log('onSuccess callback finished');
+      }
+     // setTimeout(onClose, 0);
     }catch(err){
-      // Always display the error message from api.js
       setMsg({type:'err', text: err.message})
     }finally{ setLoading(false) }
   }

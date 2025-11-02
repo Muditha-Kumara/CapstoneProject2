@@ -144,7 +144,7 @@ function RequestFoodModal({ open, onClose }) {
 
 // --- Main Home Component ---
 
-export default function Home() {
+export default function Home({ onLoginClick, user, setUser }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleDonateClick = () => {
@@ -198,7 +198,10 @@ export default function Home() {
         </div>
       </section>
 
-      <Login open={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <Login open={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={userObj => {
+        setUser(userObj);
+        setIsModalOpen(false);
+      }} />
     </div>
   );
 }
