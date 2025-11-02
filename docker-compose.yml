@@ -45,24 +45,7 @@ services:
       retries: 3
 
   # Frontend React App (hot reload with Vite)
-  frontend:
-    build:
-      context: ./src/frontend
-      dockerfile: Dockerfile
-    container_name: nourishnet_frontend
-    environment:
-      - REACT_APP_API_URL=http://localhost:5000/api
-      - REACT_APP_NODE_ENV=development
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./src/frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-    command: npm start
-    stdin_open: true
-    tty: true
+  
 
   # Redis for session management and caching (optional)
   redis:

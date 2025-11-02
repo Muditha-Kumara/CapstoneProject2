@@ -4,6 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-COPY .env .env
+#this getting issue with windows system
+COPY .env .env   
 EXPOSE 5000
 CMD ["npm", "run", "dev"]
