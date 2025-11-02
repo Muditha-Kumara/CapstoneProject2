@@ -1,9 +1,15 @@
 const BASE_URL = import.meta.env.VITE_API_URL || '';
 
-async function request(path, { method = 'GET', body } = {}) {
+let accessToken = null;
+
+async function request(path, { method = 'GET', body, auth = false } = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (auth && accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: body ? JSON.stringify(body) : undefined,
     credentials: 'include', // allow cookies for refreshToken
   });
@@ -35,8 +41,13 @@ async function request(path, { method = 'GET', body } = {}) {
   return res.status === 204 ? null : data;
 }
 
+export function setApiAccessToken(token) {
+  accessToken = token;
+}
+
 export const api = {
-  contact: (payload) => request('/messages', { method: 'POST', body: payload }),
+  contact: (payload) =>
+    request('/messages', { method: 'POST', body: payload, auth: true }),
   signup: async (payload) => {
     // You may need to update this to match your backend's signup endpoint
     return request('/auth/register', { method: 'POST', body: payload });
@@ -48,4 +59,13 @@ export const api = {
       body: { email, password },
     });
   },
+  refresh: async () => {
+    // Calls backend to refresh access token using httpOnly cookie
+    const result = await request('/auth/refresh-token', { method: 'POST' });
+    if (result && result.accessToken) {
+      setApiAccessToken(result.accessToken);
+    }
+    return result;
+  },
+  // Add other authenticated endpoints here
 };

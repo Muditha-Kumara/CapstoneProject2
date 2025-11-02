@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { api } from '../lib/api'
+import { api, setApiAccessToken } from '../lib/api'
 
 const ROLES = [
   { value: '', label: 'I am a…' },
@@ -41,8 +41,9 @@ export default function Login({ open, onClose, onSuccess }){
       e.target.reset()
       setRole('');
       if (result && result.user && result.user.email) {
-        console.log('Calling onSuccess with:', result.user);
-        onSuccess(result.user);
+        setApiAccessToken(result.accessToken);
+        console.log('Calling onSuccess with:', result.user, result.accessToken);
+        onSuccess(result.user, result.accessToken);
         console.log('onSuccess callback finished');
       }
      // setTimeout(onClose, 0);
