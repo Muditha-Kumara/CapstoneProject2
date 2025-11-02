@@ -32,9 +32,15 @@ export default function App() {
     if (user) setLoginOpen(false);
   }, [user]);
 
+  const handleLogout = async () => {
+    await api.logout();
+    setUser(null);
+    setAccessToken(null);
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-800 flex flex-col">
-      <Header user={user} onLoginClick={() => setLoginOpen(true)} />
+      <Header user={user} onLoginClick={() => setLoginOpen(true)} onLogout={handleLogout} />
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home onLoginClick={() => setLoginOpen(true)} user={user} setUser={setUser} accessToken={accessToken} setAccessToken={setAccessToken} />} />

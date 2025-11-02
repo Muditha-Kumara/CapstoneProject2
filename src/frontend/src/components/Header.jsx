@@ -1,7 +1,7 @@
 import { Link, NavLink } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 
-export default function Header({ user, onLoginClick }) {
+export default function Header({ user, onLoginClick, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -37,7 +37,7 @@ export default function Header({ user, onLoginClick }) {
                 {dropdownOpen && (
                   <div className="absolute right-0 top-full w-40 bg-white border rounded shadow-lg z-20">
                     <button className="w-full text-left px-4 py-2 hover:bg-green-50">Profile</button>
-                    <button className="w-full text-left px-4 py-2 hover:bg-green-50">Logout</button>
+                    <button className="w-full text-left px-4 py-2 hover:bg-green-50" onClick={onLogout}>Logout</button>
                   </div>
                 )}
               </div>

@@ -67,5 +67,10 @@ export const api = {
     }
     return result;
   },
+  logout: async () => {
+    // Calls backend to clear refresh token cookie
+    await request('/auth/logout', { method: 'POST' });
+    setApiAccessToken(null);
+  },
   // Add other authenticated endpoints here
 };
