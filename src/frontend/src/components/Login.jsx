@@ -23,7 +23,15 @@ export default function Login({ open, onClose }){
 
     const form = new FormData(e.target)
     const payload = Object.fromEntries(form.entries())
-    if (mode === 'signup') payload.role = role;
+    if (mode === 'signup') {
+      // Only allow valid roles for backend
+      const validRoles = ['donor', 'recipient', 'provider'];
+      payload.role = validRoles.includes(role) ? role : 'none';
+      // Combine firstName and lastName into name for backend
+      payload.name = `${payload.firstName} ${payload.lastName}`.trim();
+      delete payload.firstName;
+      delete payload.lastName;
+    }
 
     try{
       if(mode==='signup') await api.signup(payload)
