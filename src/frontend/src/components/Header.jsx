@@ -24,6 +24,11 @@ export default function Header({ user, onLoginClick, onLogout }) {
           <NavLink to="/how" className={({isActive})=> isActive? 'text-green-700 underline' : 'hover:text-green-700'}>How It Works</NavLink>
           <NavLink to="/about" className={({isActive})=> isActive? 'text-green-700 underline' : 'hover:text-green-700'}>About</NavLink>
           <NavLink to="/contact" className={({isActive})=> isActive? 'text-green-700 underline' : 'hover:text-green-700'}>Contact</NavLink>
+          {user && user.email && (
+            <NavLink to="/donor" className={({isActive})=> isActive? 'text-orange-600 underline' : 'hover:text-orange-600'}>
+              Donor Dashboard
+            </NavLink>
+          )}
           <div className="flex items-center">
             {user && user.email ? (
               <div className="relative"
@@ -65,6 +70,11 @@ export default function Header({ user, onLoginClick, onLogout }) {
           <NavLink to="/how" className={({isActive})=> isActive? 'text-green-700 underline' : 'hover:text-green-700'} onClick={()=>setMenuOpen(false)}>How It Works</NavLink>
           <NavLink to="/about" className={({isActive})=> isActive? 'text-green-700 underline' : 'hover:text-green-700'} onClick={()=>setMenuOpen(false)}>About</NavLink>
           <NavLink to="/contact" className={({isActive})=> isActive? 'text-green-700 underline' : 'hover:text-green-700'} onClick={()=>setMenuOpen(false)}>Contact</NavLink>
+          {user && user.email && (
+            <NavLink to="/donor" className={({isActive})=> isActive? 'text-orange-600 underline' : 'hover:text-orange-600'} onClick={()=>setMenuOpen(false)}>
+              Donor Dashboard
+            </NavLink>
+          )}
           {user && user.email ? (
             <span className="font-bold text-green-700">{user.email}</span>
           ) : (
