@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Dummy data for demonstration; replace with API integration
 const dummyStats = {
@@ -15,18 +16,21 @@ export default function Donor({ user }) {
   const [showDonateModal, setShowDonateModal] = useState(false);
   const [stats, setStats] = useState(dummyStats);
   const [transactions, setTransactions] = useState(dummyTransactions);
+  const navigate = useNavigate();
 
   // TODO: Fetch real stats and transactions from API
   useEffect(() => {
     // Example: fetch('/api/donor/stats').then(...)
   }, []);
 
+  useEffect(() => {
+    if (!user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
   if (!user) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-xl text-gray-600">Please log in to view your donor dashboard.</div>
-      </div>
-    );
+    return null; // Prevent rendering anything while redirecting
   }
 
   return (
