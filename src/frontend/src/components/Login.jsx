@@ -4,8 +4,9 @@ import { api, setApiAccessToken } from '../lib/api'
 const ROLES = [
   { value: '', label: 'I am a…' },
   { value: 'donor', label: 'Donor' },
-  { value: 'trusted-adult', label: 'Trusted Adult' },
+  { value: 'recipient', label: 'Trusted Adult' },
   { value: 'provider', label: 'Food Provider' },
+  { value: 'admin', label: 'Admin' },
 ];
 
 export default function Login({ open, onClose, onSuccess }){
@@ -25,7 +26,7 @@ export default function Login({ open, onClose, onSuccess }){
     const payload = Object.fromEntries(form.entries())
     if (mode === 'signup') {
       // Only allow valid roles for backend
-      const validRoles = ['donor', 'recipient', 'provider'];
+      const validRoles = ['donor', 'recipient', 'provider', 'admin'];
       payload.role = validRoles.includes(role) ? role : 'none';
       // Combine firstName and lastName into name for backend
       payload.name = `${payload.firstName} ${payload.lastName}`.trim();

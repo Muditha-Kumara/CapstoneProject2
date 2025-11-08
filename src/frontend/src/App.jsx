@@ -8,6 +8,9 @@ import About from './pages/About'
 import Contact from './pages/Contact'
 import Login from './components/Login'
 import Donor from './pages/Donor';
+import Requester from './pages/Requester';
+import Provider from './pages/Provider';
+import Admin from './pages/Admin';
 import { api } from './lib/api'
 
 export default function App() {
@@ -32,11 +35,16 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    console.log("myUser:", user, "myPostLoginRedirect:", postLoginRedirect);
     if (user && postLoginRedirect) {
-      // If user is a donor, redirect to donor dashboard
+      // Redirect users to their respective dashboards based on role
       if (user.role === 'donor' || user.isDonor) {
         navigate('/donor', { replace: true });
+      } else if (user.role === 'recipient' || user.isRecipient) {
+        navigate('/recipient', { replace: true });
+      } else if (user.role === 'provider' || user.isProvider) {
+        navigate('/provider', { replace: true });
+      } else if (user.role === 'admin' || user.isAdmin) {
+        navigate('/admin', { replace: true });
       }
       setPostLoginRedirect(false);
     }
@@ -62,6 +70,9 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/donor" element={user ? <Donor user={user} /> : <Navigate to="/" replace />} />
+          <Route path="/recipient" element={user ? <Requester user={user} /> : <Navigate to="/" replace />} />
+          <Route path="/provider" element={user ? <Provider user={user} /> : <Navigate to="/" replace />} />
+          <Route path="/admin" element={user ? <Admin user={user} /> : <Navigate to="/" replace />} />
         </Routes>
         <Login open={loginOpen} onClose={() => setLoginOpen(false)} onSuccess={(userObj, token) => {
           setUser(userObj);
