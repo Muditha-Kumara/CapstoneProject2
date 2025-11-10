@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Modal from '../components/Modal';
 
 // Demo data for active order and history
@@ -39,6 +39,59 @@ const orderHistory = [
 ];
 
 function RequestFoodModal({ open, onClose }) {
+  const [numChildren, setNumChildren] = useState('');
+  const [childrenDropdownOpen, setChildrenDropdownOpen] = useState(false);
+  const [mealTime, setMealTime] = useState('');
+  const [mealDropdownOpen, setMealDropdownOpen] = useState(false);
+  const [location, setLocation] = useState('');
+  const [locating, setLocating] = useState(false);
+  const [coords, setCoords] = useState(null);
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+
+  const childrenOptions = ['1', '2', '3', '4', '5'];
+  const mealOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+
+  useEffect(() => {
+    if (coords && window.google && mapRef.current) {
+      const map = new window.google.maps.Map(mapRef.current, {
+        center: coords,
+        zoom: 16,
+      });
+      const marker = new window.google.maps.Marker({
+        position: coords,
+        map,
+        draggable: true,
+      });
+      marker.addListener('dragend', () => {
+        const pos = marker.getPosition();
+        setCoords({ lat: pos.lat(), lng: pos.lng() });
+        setLocation(`Lat: ${pos.lat().toFixed(5)}, Lng: ${pos.lng().toFixed(5)}`);
+      });
+      markerRef.current = marker;
+    }
+  }, [coords]);
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setCoords({ lat: latitude, lng: longitude });
+        setLocation(`Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`);
+        setLocating(false);
+      },
+      (err) => {
+        alert('Unable to retrieve your location.');
+        setLocating(false);
+      }
+    );
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     alert('Food request submitted!');
@@ -48,22 +101,75 @@ function RequestFoodModal({ open, onClose }) {
     <Modal open={open} onClose={onClose} title="Request Food">
       <form className="space-y-4" onSubmit={handleSubmit}>
         <input className="w-full px-4 py-2 border rounded-lg" placeholder="Your Name (Trusted Adult)" required />
-        <input className="w-full px-4 py-2 border rounded-lg" placeholder="Location (School, etc.)" required />
-        <select className="w-full px-4 py-2 border rounded-lg text-gray-500" required>
-          <option value="" disabled selected>Number of Children</option>
-          <option>1</option>
-          <option>2</option>
-          <option>3</option>
-          <option>4</option>
-          <option>5+</option>
-        </select>
-        <select className="w-full px-4 py-2 border rounded-lg text-gray-500" required>
-          <option value="" disabled selected>Preferred Meal Time</option>
-          <option>Breakfast</option>
-          <option>Lunch</option>
-          <option>Dinner</option>
-          <option>Snack</option>
-        </select>
+        <div className="flex gap-2">
+          <input
+            className="w-full px-4 py-2 border rounded-lg"
+            placeholder="Location (School, etc.)"
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+            required
+          />
+          <button
+            type="button"
+            className="px-3 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+            onClick={handleDetectLocation}
+            disabled={locating}
+          >
+            {locating ? 'Locating…' : 'Detect'}
+          </button>
+        </div>
+        {/* Google Map for location selection */}
+        <div className="w-full h-64 rounded-lg border" ref={mapRef} style={{ minHeight: '256px', marginBottom: '1rem' }}></div>
+        {/* Custom Dropdown for Number of Children */}
+        <div className="relative">
+          <button
+            type="button"
+            className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center"
+            onClick={() => setChildrenDropdownOpen(!childrenDropdownOpen)}
+            tabIndex={0}
+          >
+            {numChildren ? numChildren : 'Number of Children'}
+            <span className="ml-2">▼</span>
+          </button>
+          {childrenDropdownOpen && (
+            <div className="absolute left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10">
+              {childrenOptions.map(opt => (
+                <div
+                  key={opt}
+                  className="px-4 py-2 cursor-pointer hover:bg-green-100"
+                  onClick={() => { setNumChildren(opt); setChildrenDropdownOpen(false); }}
+                >
+                  {opt}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {/* Custom Dropdown for Preferred Meal Time */}
+        <div className="relative">
+          <button
+            type="button"
+            className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center"
+            onClick={() => setMealDropdownOpen(!mealDropdownOpen)}
+            tabIndex={0}
+          >
+            {mealTime ? mealTime : 'Preferred Meal Time'}
+            <span className="ml-2">▼</span>
+          </button>
+          {mealDropdownOpen && (
+            <div className="absolute left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10">
+              {mealOptions.map(opt => (
+                <div
+                  key={opt}
+                  className="px-4 py-2 cursor-pointer hover:bg-green-100"
+                  onClick={() => { setMealTime(opt); setMealDropdownOpen(false); }}
+                >
+                  {opt}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         <textarea className="w-full px-4 py-2 border rounded-lg" placeholder="Dietary needs or preferences (optional)" />
         <div className="flex justify-end gap-3 pt-2">
           <button type="button" className="px-4 py-2 border rounded-lg" onClick={onClose}>
