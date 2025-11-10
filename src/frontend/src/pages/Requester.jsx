@@ -52,6 +52,25 @@ function RequestFoodModal({ open, onClose }) {
   const childrenOptions = ['1', '2', '3', '4', '5'];
   const mealOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
+  // Auto-detect location when modal opens
+  useEffect(() => {
+    if (open) {
+      if (!navigator.geolocation) return;
+      setLocating(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setCoords({ lat: latitude, lng: longitude });
+          setLocation(`Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`);
+          setLocating(false);
+        },
+        () => {
+          setLocating(false);
+        }
+      );
+    }
+  }, [open]);
+
   useEffect(() => {
     if (coords && window.google && mapRef.current) {
       const map = new window.google.maps.Map(mapRef.current, {
