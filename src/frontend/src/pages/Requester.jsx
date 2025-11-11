@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import Modal from '../components/Modal';
 
 // Demo data for active order and history
@@ -38,19 +40,47 @@ const orderHistory = [
   },
 ];
 
-function RequestFoodModal({ open, onClose }) {
+function RequestFoodModal({ open, onClose, user }) {
   const [numChildren, setNumChildren] = useState('');
   const [childrenDropdownOpen, setChildrenDropdownOpen] = useState(false);
+  const [mealType, setMealType] = useState('');
+  const [mealTypeDropdownOpen, setMealTypeDropdownOpen] = useState(false);
   const [mealTime, setMealTime] = useState('');
-  const [mealDropdownOpen, setMealDropdownOpen] = useState(false);
+  const [mealTimeDropdownOpen, setMealTimeDropdownOpen] = useState(false);
   const [location, setLocation] = useState('');
   const [locating, setLocating] = useState(false);
   const [coords, setCoords] = useState(null);
+  const [name, setName] = useState(user?.name || '');
   const mapRef = useRef(null);
   const markerRef = useRef(null);
+  const timePickerWrapperRef = useRef(null);
+  // Track which dropdown is active for z-index stacking
+  const [activeDropdown, setActiveDropdown] = useState(null); // 'children' | 'mealType' | 'mealTime' | null
 
   const childrenOptions = ['1', '2', '3', '4', '5'];
-  const mealOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+  const mealTypeOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+
+  // Generate time options: 15-min intervals, starting 1 hour ahead
+  const getTimeOptions = () => {
+    const options = [];
+    const now = new Date();
+    let start = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour ahead
+    start.setSeconds(0, 0);
+    start.setMinutes(Math.ceil(start.getMinutes() / 15) * 15); // round up to next 15 min
+    const end = new Date(now);
+    end.setHours(23, 59, 0, 0);
+    while (start <= end) {
+      let hours = start.getHours();
+      let minutes = start.getMinutes();
+      let ampm = hours >= 12 ? 'PM' : 'AM';
+      let displayHour = hours % 12 || 12;
+      let display = `${displayHour}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+      options.push(display);
+      start = new Date(start.getTime() + 15 * 60 * 1000);
+    }
+    return options;
+  };
+  const timeOptions = getTimeOptions();
 
   // Auto-detect location when modal opens
   useEffect(() => {
@@ -116,10 +146,22 @@ function RequestFoodModal({ open, onClose }) {
     alert('Food request submitted!');
     onClose();
   };
+
+  useEffect(() => {
+    if (user?.name) setName(user.name);
+  }, [user]);
+
   return (
     <Modal open={open} onClose={onClose} title="Request Food">
       <form className="space-y-4" onSubmit={handleSubmit}>
-        <input className="w-full px-4 py-2 border rounded-lg" placeholder="Your Name (Trusted Adult)" required />
+        <input
+          className="w-full px-4 py-2 border rounded-lg"
+          placeholder="Your Name (Trusted Adult)"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          required
+          disabled={!!user?.name}
+        />
         <div className="flex gap-2">
           <input
             className="w-full px-4 py-2 border rounded-lg"
@@ -140,54 +182,85 @@ function RequestFoodModal({ open, onClose }) {
         {/* Google Map for location selection */}
         <div className="w-full h-64 rounded-lg border" ref={mapRef} style={{ minHeight: '256px', marginBottom: '1rem' }}></div>
         {/* Custom Dropdown for Number of Children */}
-        <div className="relative">
-          <button
-            type="button"
-            className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center"
-            onClick={() => setChildrenDropdownOpen(!childrenDropdownOpen)}
-            tabIndex={0}
-          >
-            {numChildren ? numChildren : 'Number of Children'}
-            <span className="ml-2">▼</span>
-          </button>
-          {childrenDropdownOpen && (
-            <div className="absolute left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10">
-              {childrenOptions.map(opt => (
-                <div
-                  key={opt}
-                  className="px-4 py-2 cursor-pointer hover:bg-green-100"
-                  onClick={() => { setNumChildren(opt); setChildrenDropdownOpen(false); }}
-                >
-                  {opt}
-                </div>
-              ))}
-            </div>
-          )}
+        <div className="relative" style={{ zIndex: activeDropdown === 'children' ? 100 : 30 }}>
+          <div onMouseLeave={() => { setChildrenDropdownOpen(false); setActiveDropdown(null); }}>
+            <button
+              type="button"
+              className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center"
+              onClick={() => { setChildrenDropdownOpen(!childrenDropdownOpen); setActiveDropdown('children'); }}
+              tabIndex={0}
+            >
+              {numChildren ? numChildren : 'Number of Children'}
+              <span className="ml-2">▼</span>
+            </button>
+            {childrenDropdownOpen && (
+              <div className="absolute left-0 right-0 bg-white border rounded-lg shadow-lg" style={{ zIndex: activeDropdown === 'children' ? 200 : 50, marginTop: 0 }}>
+                {childrenOptions.map(opt => (
+                  <div
+                    key={opt}
+                    className="px-4 py-2 cursor-pointer hover:bg-green-100"
+                    onClick={() => { setNumChildren(opt); setChildrenDropdownOpen(false); setActiveDropdown(null); }}
+                  >
+                    {opt}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-        {/* Custom Dropdown for Preferred Meal Time */}
-        <div className="relative">
-          <button
-            type="button"
-            className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center"
-            onClick={() => setMealDropdownOpen(!mealDropdownOpen)}
-            tabIndex={0}
-          >
-            {mealTime ? mealTime : 'Preferred Meal Time'}
-            <span className="ml-2">▼</span>
-          </button>
-          {mealDropdownOpen && (
-            <div className="absolute left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10">
-              {mealOptions.map(opt => (
-                <div
-                  key={opt}
-                  className="px-4 py-2 cursor-pointer hover:bg-green-100"
-                  onClick={() => { setMealTime(opt); setMealDropdownOpen(false); }}
-                >
-                  {opt}
-                </div>
-              ))}
-            </div>
-          )}
+        {/* Custom Dropdown for Meal Type */}
+        <div className="relative" style={{ zIndex: activeDropdown === 'mealType' ? 100 : 30 }}>
+          <div onMouseLeave={() => { setMealTypeDropdownOpen(false); setActiveDropdown(null); }}>
+            <button
+              type="button"
+              className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center"
+              onClick={() => { setMealTypeDropdownOpen(!mealTypeDropdownOpen); setActiveDropdown('mealType'); }}
+              tabIndex={0}
+            >
+              {mealType ? mealType : 'Meal Type'}
+              <span className="ml-2">▼</span>
+            </button>
+            {mealTypeDropdownOpen && (
+              <div className="absolute left-0 right-0 bg-white border rounded-lg shadow-lg" style={{ zIndex: activeDropdown === 'mealType' ? 200 : 50, marginTop: 0 }}>
+                {mealTypeOptions.map(opt => (
+                  <div
+                    key={opt}
+                    className="px-4 py-2 cursor-pointer hover:bg-green-100"
+                    onClick={() => { setMealType(opt); setMealTypeDropdownOpen(false); setActiveDropdown(null); }}
+                  >
+                    {opt}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        {/* Custom Dropdown for Meal Time */}
+        <div className="relative" style={{ zIndex: activeDropdown === 'mealTime' ? 100 : 30 }}>
+          <div onMouseLeave={() => { setMealTimeDropdownOpen(false); setActiveDropdown(null); }}>
+            <button
+              type="button"
+              className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center"
+              onClick={() => { setMealTimeDropdownOpen(!mealTimeDropdownOpen); setActiveDropdown('mealTime'); }}
+              tabIndex={0}
+            >
+              {mealTime ? mealTime : 'Select meal time'}
+              <span className="ml-2">▼</span>
+            </button>
+            {mealTimeDropdownOpen && (
+              <div className="absolute left-0 right-0 bg-white border rounded-lg shadow-lg max-h-64 overflow-y-auto" style={{ zIndex: activeDropdown === 'mealTime' ? 200 : 50, marginTop: 0 }}>
+                {timeOptions.map(opt => (
+                  <div
+                    key={opt}
+                    className="px-4 py-2 cursor-pointer hover:bg-green-100"
+                    onClick={() => { setMealTime(opt); setMealTimeDropdownOpen(false); setActiveDropdown(null); }}
+                  >
+                    {opt}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         <textarea className="w-full px-4 py-2 border rounded-lg" placeholder="Dietary needs or preferences (optional)" />
         <div className="flex justify-end gap-3 pt-2">
@@ -237,7 +310,7 @@ function FeedbackModal({ open, onClose, orderId }) {
   );
 }
 
-export default function Requester() {
+export default function Requester({ user }) {
   const [isRequestModalOpen, setRequestModalOpen] = useState(false);
   const [isChatOpen, setChatOpen] = useState(false);
   const [isFeedbackOpen, setFeedbackOpen] = useState(false);
@@ -328,7 +401,7 @@ export default function Requester() {
       </section>
 
       {/* Modals */}
-      <RequestFoodModal open={isRequestModalOpen} onClose={() => setRequestModalOpen(false)} />
+      <RequestFoodModal open={isRequestModalOpen} onClose={() => setRequestModalOpen(false)} user={user} />
       <ChatModal open={isChatOpen} onClose={() => setChatOpen(false)} withWhom={isChatOpen ? 'Provider/Donor' : ''} />
       <FeedbackModal open={isFeedbackOpen} onClose={() => setFeedbackOpen(false)} orderId={activeOrder?.id} />
     </div>
