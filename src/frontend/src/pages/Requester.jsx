@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Modal from '../components/Modal';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 // Demo data for active order and history
 const activeOrder = {
@@ -51,14 +53,16 @@ function RequestFoodModal({ open, onClose, user }) {
   const [locating, setLocating] = useState(false);
   const [coords, setCoords] = useState(null);
   const [name, setName] = useState(user?.name || '');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [timeOptions, setTimeOptions] = useState([]); // NEW: store time options in state
   const mapRef = useRef(null);
   const markerRef = useRef(null);
   const timePickerWrapperRef = useRef(null);
   // Track which dropdown is active for z-index stacking
-  const [activeDropdown, setActiveDropdown] = useState(null); // 'children' | 'mealType' | 'mealTime' | null
+  const [activeDropdown, setActiveDropdown] = useState(null); // 'children' | 'mealType' | 'mealTime' | 'countryCode' | null
 
   const childrenOptions = ['1', '2', '3', '4', '5'];
-  const mealTypeOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+  const mealTypeOptions = ['Main', 'Snack', 'Drink', 'Dessert', 'Sweet'];
 
   // Generate time options: 15-min intervals, starting 1 hour ahead
   const getTimeOptions = () => {
@@ -80,7 +84,18 @@ function RequestFoodModal({ open, onClose, user }) {
     }
     return options;
   };
-  const timeOptions = getTimeOptions();
+
+  // NEW: recalculate time options every time modal opens
+  useEffect(() => {
+    if (open) {
+      const newOptions = getTimeOptions();
+      setTimeOptions(newOptions);
+      // If selected time is no longer valid, reset it
+      if (!newOptions.includes(mealTime)) {
+        setMealTime('');
+      }
+    }
+  }, [open]);
 
   // Auto-detect location when modal opens
   useEffect(() => {
@@ -153,121 +168,164 @@ function RequestFoodModal({ open, onClose, user }) {
 
   return (
     <Modal open={open} onClose={onClose} title="Request Food">
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <input
-          className="w-full px-4 py-2 border rounded-lg"
-          placeholder="Your Name (Trusted Adult)"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          required
-          disabled={!!user?.name}
-        />
-        <div className="flex gap-2">
+      <form className="space-y-6 bg-gray-50 p-6 rounded-xl shadow-md" onSubmit={handleSubmit}>
+        <h3 className="text-xl font-semibold text-green-700 mb-2">Meal Request Details</h3>
+        {/* Name input - move to top */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="name">Your Name (Trusted Adult)</label>
           <input
-            className="w-full px-4 py-2 border rounded-lg"
-            placeholder="Location (School, etc.)"
-            value={location}
-            onChange={e => setLocation(e.target.value)}
+            id="name"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+            placeholder="Your Name"
+            value={name}
+            onChange={e => setName(e.target.value)}
             required
+            disabled={!!user?.name}
           />
-          <button
-            type="button"
-            className="px-3 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
-            onClick={handleDetectLocation}
-            disabled={locating}
-          >
-            {locating ? 'Locating…' : 'Detect'}
-          </button>
         </div>
-        {/* Google Map for location selection */}
-        <div className="w-full h-64 rounded-lg border" ref={mapRef} style={{ minHeight: '256px', marginBottom: '1rem' }}></div>
-        {/* Custom Dropdown for Number of Children */}
-        <div className="relative" style={{ zIndex: activeDropdown === 'children' ? 100 : 30 }}>
-          <div onMouseLeave={() => { setChildrenDropdownOpen(false); setActiveDropdown(null); }}>
+        {/* Phone Input with Country Code and Flag - add gap and spacing */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="phone">Phone Number</label>
+          <PhoneInput
+            country={'us'}
+            value={phoneNumber}
+            onChange={setPhoneNumber}
+            inputProps={{
+              name: 'phone',
+              id: 'phone',
+              required: true,
+              className: 'pl-14 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition',
+              placeholder: 'Phone Number',
+            }}
+            containerClass="w-full"
+            buttonClass=""
+            dropdownClass=""
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="location">Location (Select from the map)</label>
+          <div className="flex gap-2">
+            <input
+              id="location"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+              placeholder="Location (School, etc.)"
+              value={location}
+              onChange={e => setLocation(e.target.value)}
+              required
+              readOnly
+            />
             <button
               type="button"
-              className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center"
-              onClick={() => { setChildrenDropdownOpen(!childrenDropdownOpen); setActiveDropdown('children'); }}
-              tabIndex={0}
+              className="px-3 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+              onClick={handleDetectLocation}
+              disabled={locating}
             >
-              {numChildren ? numChildren : 'Number of Children'}
-              <span className="ml-2">▼</span>
+              {locating ? 'Locating…' : 'Detect'}
             </button>
-            {childrenDropdownOpen && (
-              <div className="absolute left-0 right-0 bg-white border rounded-lg shadow-lg" style={{ zIndex: activeDropdown === 'children' ? 200 : 50, marginTop: 0 }}>
-                {childrenOptions.map(opt => (
-                  <div
-                    key={opt}
-                    className="px-4 py-2 cursor-pointer hover:bg-green-100"
-                    onClick={() => { setNumChildren(opt); setChildrenDropdownOpen(false); setActiveDropdown(null); }}
-                  >
-                    {opt}
-                  </div>
-                ))}
-              </div>
-            )}
+          </div>
+        </div>
+        {/* Google Map for location selection */}
+        <div className="w-full h-64 rounded-lg border mb-4" ref={mapRef} style={{ minHeight: '256px' }}></div>
+        {/* Custom Dropdown for Number of Children */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Number of Children</label>
+          <div className="relative" style={{ zIndex: activeDropdown === 'children' ? 100 : 30 }}>
+            <div onMouseLeave={() => { setChildrenDropdownOpen(false); setActiveDropdown(null); }}>
+              <button
+                type="button"
+                className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                onClick={() => { setChildrenDropdownOpen(!childrenDropdownOpen); setActiveDropdown('children'); }}
+                tabIndex={0}
+              >
+                {numChildren ? numChildren : 'Select number'}
+                <span className="ml-2">▼</span>
+              </button>
+              {childrenDropdownOpen && (
+                <div className="absolute left-0 right-0 bg-white border rounded-lg shadow-lg" style={{ zIndex: activeDropdown === 'children' ? 200 : 50, marginTop: 0 }}>
+                  {childrenOptions.map(opt => (
+                    <div
+                      key={opt}
+                      className="px-4 py-2 cursor-pointer hover:bg-green-100"
+                      onClick={() => { setNumChildren(opt); setChildrenDropdownOpen(false); setActiveDropdown(null); }}
+                    >
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         {/* Custom Dropdown for Meal Type */}
-        <div className="relative" style={{ zIndex: activeDropdown === 'mealType' ? 100 : 30 }}>
-          <div onMouseLeave={() => { setMealTypeDropdownOpen(false); setActiveDropdown(null); }}>
-            <button
-              type="button"
-              className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center"
-              onClick={() => { setMealTypeDropdownOpen(!mealTypeDropdownOpen); setActiveDropdown('mealType'); }}
-              tabIndex={0}
-            >
-              {mealType ? mealType : 'Meal Type'}
-              <span className="ml-2">▼</span>
-            </button>
-            {mealTypeDropdownOpen && (
-              <div className="absolute left-0 right-0 bg-white border rounded-lg shadow-lg" style={{ zIndex: activeDropdown === 'mealType' ? 200 : 50, marginTop: 0 }}>
-                {mealTypeOptions.map(opt => (
-                  <div
-                    key={opt}
-                    className="px-4 py-2 cursor-pointer hover:bg-green-100"
-                    onClick={() => { setMealType(opt); setMealTypeDropdownOpen(false); setActiveDropdown(null); }}
-                  >
-                    {opt}
-                  </div>
-                ))}
-              </div>
-            )}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Meal Type</label>
+          <div className="relative" style={{ zIndex: activeDropdown === 'mealType' ? 100 : 30 }}>
+            <div onMouseLeave={() => { setMealTypeDropdownOpen(false); setActiveDropdown(null); }}>
+              <button
+                type="button"
+                className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                onClick={() => { setMealTypeDropdownOpen(!mealTypeDropdownOpen); setActiveDropdown('mealType'); }}
+                tabIndex={0}
+              >
+                {mealType ? mealType : 'Select meal type'}
+                <span className="ml-2">▼</span>
+              </button>
+              {mealTypeDropdownOpen && (
+                <div className="absolute left-0 right-0 bg-white border rounded-lg shadow-lg" style={{ zIndex: activeDropdown === 'mealType' ? 200 : 50, marginTop: 0 }}>
+                  {mealTypeOptions.map(opt => (
+                    <div
+                      key={opt}
+                      className="px-4 py-2 cursor-pointer hover:bg-green-100"
+                      onClick={() => { setMealType(opt); setMealTypeDropdownOpen(false); setActiveDropdown(null); }}
+                    >
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         {/* Custom Dropdown for Meal Time */}
-        <div className="relative" style={{ zIndex: activeDropdown === 'mealTime' ? 100 : 30 }}>
-          <div onMouseLeave={() => { setMealTimeDropdownOpen(false); setActiveDropdown(null); }}>
-            <button
-              type="button"
-              className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center"
-              onClick={() => { setMealTimeDropdownOpen(!mealTimeDropdownOpen); setActiveDropdown('mealTime'); }}
-              tabIndex={0}
-            >
-              {mealTime ? mealTime : 'Select meal time'}
-              <span className="ml-2">▼</span>
-            </button>
-            {mealTimeDropdownOpen && (
-              <div className="absolute left-0 right-0 bg-white border rounded-lg shadow-lg max-h-64 overflow-y-auto" style={{ zIndex: activeDropdown === 'mealTime' ? 200 : 50, marginTop: 0 }}>
-                {timeOptions.map(opt => (
-                  <div
-                    key={opt}
-                    className="px-4 py-2 cursor-pointer hover:bg-green-100"
-                    onClick={() => { setMealTime(opt); setMealTimeDropdownOpen(false); setActiveDropdown(null); }}
-                  >
-                    {opt}
-                  </div>
-                ))}
-              </div>
-            )}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Meal Time</label>
+          <span className="block text-xs text-gray-500 mb-2">Earliest selectable time is 1 hour from now.</span>
+          <div className="relative" style={{ zIndex: activeDropdown === 'mealTime' ? 100 : 30 }}>
+            <div onMouseLeave={() => { setMealTimeDropdownOpen(false); setActiveDropdown(null); }}>
+              <button
+                type="button"
+                className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+                onClick={() => { setMealTimeDropdownOpen(!mealTimeDropdownOpen); setActiveDropdown('mealTime'); }}
+                tabIndex={0}
+              >
+                {mealTime ? mealTime : 'Select meal time'}
+                <span className="ml-2">▼</span>
+              </button>
+              {mealTimeDropdownOpen && (
+                <div className="absolute left-0 right-0 bg-white border rounded-lg shadow-lg max-h-64 overflow-y-auto" style={{ zIndex: activeDropdown === 'mealTime' ? 200 : 50, marginTop: 0 }}>
+                  {timeOptions.map(opt => (
+                    <div
+                      key={opt}
+                      className="px-4 py-2 cursor-pointer hover:bg-green-100"
+                      onClick={() => { setMealTime(opt); setMealTimeDropdownOpen(false); setActiveDropdown(null); }}
+                    >
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        <textarea className="w-full px-4 py-2 border rounded-lg" placeholder="Dietary needs or preferences (optional)" />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Dietary needs or preferences (optional)</label>
+          <textarea className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition" placeholder="Dietary needs or preferences (optional)" />
+        </div>
         <div className="flex justify-end gap-3 pt-2">
           <button type="button" className="px-4 py-2 border rounded-lg" onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" className="px-4 py-2 text-white bg-green-600 rounded-lg">
+          <button type="submit" className="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-400 transition">
             Submit
           </button>
         </div>
