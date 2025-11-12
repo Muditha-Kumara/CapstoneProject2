@@ -55,6 +55,9 @@ function RequestFoodModal({ open, onClose, user }) {
   const [name, setName] = useState(user?.name || '');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [timeOptions, setTimeOptions] = useState([]); // NEW: store time options in state
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({}); // NEW: track touched fields
+  const [notification, setNotification] = useState(''); // NEW: notification state
   const mapRef = useRef(null);
   const markerRef = useRef(null);
   const timePickerWrapperRef = useRef(null);
@@ -156,8 +159,63 @@ function RequestFoodModal({ open, onClose, user }) {
     );
   };
 
+  // Validation logic for each field
+  const validateField = (field, value) => {
+    switch (field) {
+      case 'name':
+        return !value.trim() ? 'Name is required.' : '';
+      case 'phone':
+        return (!value || value.replace(/\D/g, '').length < 10) ? 'Valid phone number required.' : '';
+      case 'location':
+        return !value.trim() ? 'Location is required.' : '';
+      case 'numChildren':
+        return !value ? 'Number of children required.' : '';
+      case 'mealType':
+        return !value ? 'Meal type required.' : '';
+      case 'mealTime':
+        return !value ? 'Meal time required.' : '';
+      default:
+        return '';
+    }
+  };
+
+  // Validate all fields
+  const validateAll = () => {
+    return {
+      name: validateField('name', name),
+      phone: validateField('phone', phoneNumber),
+      location: validateField('location', location),
+      numChildren: validateField('numChildren', numChildren),
+      mealType: validateField('mealType', mealType),
+      mealTime: validateField('mealTime', mealTime),
+    };
+  };
+
+  // Live validation on change
+  useEffect(() => {
+    setErrors(validateAll());
+    // Hide notification if form becomes valid
+    if (notification && Object.values(validateAll()).every(err => !err)) {
+      setNotification('');
+    }
+    // eslint-disable-next-line
+  }, [name, phoneNumber, location, numChildren, mealType, mealTime]);
+
+  // Check if all required fields are valid
+  const isFormValid = Object.values(validateAll()).every(err => !err);
+
+  const handleBlur = (field) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    setTouched({ name: true, phone: true, location: true, numChildren: true, mealType: true, mealTime: true });
+    if (!isFormValid) {
+      setNotification('Please complete all required fields correctly before submitting.');
+      return;
+    }
+    setNotification('');
     alert('Food request submitted!');
     onClose();
   };
@@ -181,9 +239,11 @@ function RequestFoodModal({ open, onClose, user }) {
             placeholder="Your Name"
             value={name}
             onChange={e => setName(e.target.value)}
+            onBlur={() => handleBlur('name')}
             required
             disabled={!!user?.name}
           />
+          {touched.name && errors.name && <div className="text-red-500 text-xs mt-1">{errors.name}</div>}
         </div>
         {/* Phone Input with Country Code and Flag - add gap and spacing */}
         <div>
@@ -201,11 +261,13 @@ function RequestFoodModal({ open, onClose, user }) {
               required: true,
               className: 'pl-14 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition',
               placeholder: 'Phone Number',
+              onBlur: () => handleBlur('phone'),
             }}
             containerClass="w-full"
             buttonClass=""
             dropdownClass=""
           />
+          {touched.phone && errors.phone && <div className="text-red-500 text-xs mt-1">{errors.phone}</div>}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="location">
@@ -219,6 +281,7 @@ function RequestFoodModal({ open, onClose, user }) {
               placeholder="Location (School, etc.)"
               value={location}
               onChange={e => setLocation(e.target.value)}
+              onBlur={() => handleBlur('location')}
               required
               readOnly
             />
@@ -231,6 +294,7 @@ function RequestFoodModal({ open, onClose, user }) {
               {locating ? 'Locating…' : 'Detect'}
             </button>
           </div>
+          {touched.location && errors.location && <div className="text-red-500 text-xs mt-1">{errors.location}</div>}
         </div>
         {/* Google Map for location selection */}
         <div className="w-full h-64 rounded-lg border mb-4" ref={mapRef} style={{ minHeight: '256px' }}></div>
@@ -247,6 +311,7 @@ function RequestFoodModal({ open, onClose, user }) {
                 className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                 onClick={() => { setChildrenDropdownOpen(!childrenDropdownOpen); setActiveDropdown('children'); }}
                 tabIndex={0}
+                onBlur={() => handleBlur('numChildren')}
               >
                 {numChildren ? numChildren : 'Select number'}
                 <span className="ml-2">▼</span>
@@ -257,7 +322,7 @@ function RequestFoodModal({ open, onClose, user }) {
                     <div
                       key={opt}
                       className="px-4 py-2 cursor-pointer hover:bg-green-100"
-                      onClick={() => { setNumChildren(opt); setChildrenDropdownOpen(false); setActiveDropdown(null); }}
+                      onClick={() => { setNumChildren(opt); setChildrenDropdownOpen(false); setActiveDropdown(null); handleBlur('numChildren'); }}
                     >
                       {opt}
                     </div>
@@ -266,6 +331,7 @@ function RequestFoodModal({ open, onClose, user }) {
               )}
             </div>
           </div>
+          {touched.numChildren && errors.numChildren && <div className="text-red-500 text-xs mt-1">{errors.numChildren}</div>}
         </div>
         {/* Custom Dropdown for Meal Type */}
         <div>
@@ -280,6 +346,7 @@ function RequestFoodModal({ open, onClose, user }) {
                 className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                 onClick={() => { setMealTypeDropdownOpen(!mealTypeDropdownOpen); setActiveDropdown('mealType'); }}
                 tabIndex={0}
+                onBlur={() => handleBlur('mealType')}
               >
                 {mealType ? mealType : 'Select meal type'}
                 <span className="ml-2">▼</span>
@@ -290,7 +357,7 @@ function RequestFoodModal({ open, onClose, user }) {
                     <div
                       key={opt}
                       className="px-4 py-2 cursor-pointer hover:bg-green-100"
-                      onClick={() => { setMealType(opt); setMealTypeDropdownOpen(false); setActiveDropdown(null); }}
+                      onClick={() => { setMealType(opt); setMealTypeDropdownOpen(false); setActiveDropdown(null); handleBlur('mealType'); }}
                     >
                       {opt}
                     </div>
@@ -299,6 +366,7 @@ function RequestFoodModal({ open, onClose, user }) {
               )}
             </div>
           </div>
+          {touched.mealType && errors.mealType && <div className="text-red-500 text-xs mt-1">{errors.mealType}</div>}
         </div>
         {/* Custom Dropdown for Meal Time */}
         <div>
@@ -313,6 +381,7 @@ function RequestFoodModal({ open, onClose, user }) {
                 className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white text-left flex justify-between items-center focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
                 onClick={() => { setMealTimeDropdownOpen(!mealTimeDropdownOpen); setActiveDropdown('mealTime'); }}
                 tabIndex={0}
+                onBlur={() => handleBlur('mealTime')}
               >
                 {mealTime ? mealTime : 'Select meal time'}
                 <span className="ml-2">▼</span>
@@ -323,7 +392,7 @@ function RequestFoodModal({ open, onClose, user }) {
                     <div
                       key={opt}
                       className="px-4 py-2 cursor-pointer hover:bg-green-100"
-                      onClick={() => { setMealTime(opt); setMealTimeDropdownOpen(false); setActiveDropdown(null); }}
+                      onClick={() => { setMealTime(opt); setMealTimeDropdownOpen(false); setActiveDropdown(null); handleBlur('mealTime'); }}
                     >
                       {opt}
                     </div>
@@ -332,19 +401,43 @@ function RequestFoodModal({ open, onClose, user }) {
               )}
             </div>
           </div>
+          {touched.mealTime && errors.mealTime && <div className="text-red-500 text-xs mt-1">{errors.mealTime}</div>}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Dietary needs or preferences (optional)</label>
           <span className="block text-xs text-gray-500 mb-2">Mention any allergies, dietary restrictions, or preferences for the meal.</span>
           <textarea className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition" placeholder="Dietary needs or preferences (optional)" />
         </div>
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="flex justify-end gap-3 pt-2 items-center">
           <button type="button" className="px-4 py-2 border rounded-lg" onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" className="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-400 transition">
-            Submit
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className={`px-4 py-2 text-white rounded-lg focus:ring-2 focus:ring-green-400 transition ${isFormValid ? 'bg-green-600 hover:bg-green-700 cursor-pointer shadow' : 'bg-gray-400 cursor-not-allowed opacity-60'}`}
+              aria-disabled={!isFormValid}
+              tabIndex={0}
+              onClick={() => {
+                if (!isFormValid) {
+                  setTouched({ name: true, phone: true, location: true, numChildren: true, mealType: true, mealTime: true });
+                  setNotification('Please complete all required fields correctly before submitting.');
+                } else {
+                  setNotification('');
+                  alert('Food request submitted!');
+                  onClose();
+                }
+              }}
+            >
+              Submit
+            </button>
+            {notification && (
+              <div className="p-2 bg-red-100 border border-red-400 text-red-700 rounded flex items-center" role="alert">
+                <span>{notification}</span>
+                <button type="button" className="ml-2 text-red-700 font-bold" aria-label="Dismiss notification" onClick={() => setNotification('')}>&times;</button>
+              </div>
+            )}
+          </div>
         </div>
       </form>
     </Modal>
