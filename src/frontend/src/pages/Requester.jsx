@@ -514,6 +514,31 @@ export default function Requester({ user }) {
   const [isRequestModalOpen, setRequestModalOpen] = useState(false);
   const [isChatOpen, setChatOpen] = useState(false);
   const [isFeedbackOpen, setFeedbackOpen] = useState(false);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchRequests() {
+      if (!user?.id) return;
+      setLoading(true);
+      try {
+        const res = await api.getRequestsByUser({ userId: user.id, limit: 20 });
+        setRequests(res.data || []);
+      } catch (err) {
+        toast.error(err.message || 'Failed to load requests');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRequests();
+  }, [user?.id]);
+
+  // Find active request (not completed/cancelled/fulfilled)
+  const activeOrder = requests.find(r => !['completed', 'fulfilled', 'cancelled'].includes((r.status || '').toLowerCase()));
+  // If no active, show last request
+  const lastOrder = !activeOrder && requests.length > 0 ? requests[0] : null;
+  // History: all except active
+  const orderHistory = requests.filter(r => r.id !== (activeOrder?.id || lastOrder?.id));
 
   return (
     <div>
@@ -539,18 +564,26 @@ export default function Requester({ user }) {
 
       {/* Active Order Section */}
       <section className="mx-auto max-w-4xl px-4 py-10">
-        <h2 className="text-2xl font-bold text-green-800 mb-4">Active Request</h2>
-        {activeOrder ? (
+        <h2 className="text-2xl font-bold text-green-800 mb-4">
+          {activeOrder
+            ? 'Active Request'
+            : lastOrder
+            ? 'Last Request'
+            : 'Active Request'}
+        </h2>
+        {loading ? (
+          <div className="text-gray-500">Loading...</div>
+        ) : activeOrder ? (
           <div className="rounded-2xl p-6 border bg-white shadow-md flex flex-col md:flex-row gap-6 items-center">
             <div className="flex-1">
-              <div className="text-lg font-semibold text-green-700">Order #{activeOrder.id}</div>
+              <div className="text-lg font-semibold text-green-700">Order ID #{(activeOrder?.id || lastOrder?.id)?.slice(0, 8)}</div>
               <div className="mt-2 text-gray-600">Status: <span className="font-bold text-orange-600">{activeOrder.status}</span></div>
-              <div className="mt-1 text-gray-600">Provider: <span className="font-bold">{activeOrder.provider}</span></div>
-              <div className="mt-1 text-gray-600">Donor: <span className="font-bold">{activeOrder.donor}</span></div>
-              <div className="mt-1 text-gray-600">Meal: <span className="font-bold">{activeOrder.meal}</span></div>
-              <div className="mt-1 text-gray-600">Children: <span className="font-bold">{activeOrder.children}</span></div>
-              <div className="mt-1 text-gray-600">ETA: <span className="font-bold">{activeOrder.eta}</span></div>
+              <div className="mt-1 text-gray-600">Meal: <span className="font-bold">{activeOrder.food_type}</span></div>
+              <div className="mt-1 text-gray-600">Children: <span className="font-bold">{activeOrder.num_children}</span></div>
               <div className="mt-1 text-gray-600">Location: <span className="font-bold">{activeOrder.location}</span></div>
+              <div className="mt-1 text-gray-600">Meal Time: <span className="font-bold">{activeOrder.meal_time}</span></div>
+              <div className="mt-1 text-gray-600">Phone: <span className="font-bold">{activeOrder.phone_number}</span></div>
+              <div className="mt-1 text-gray-600">Dietary Needs: <span className="font-bold">{activeOrder.dietary_needs}</span></div>
             </div>
             <div className="flex flex-col gap-3">
               <button onClick={() => setChatOpen(true)} className="px-4 py-2 rounded bg-green-600 text-white font-bold hover:bg-green-700">Chat with Provider</button>
@@ -558,11 +591,23 @@ export default function Requester({ user }) {
               <button onClick={() => setFeedbackOpen(true)} className="px-4 py-2 rounded bg-yellow-500 text-white font-bold hover:bg-yellow-600">Give Feedback</button>
             </div>
           </div>
+        ) : lastOrder ? (
+          <div className="rounded-2xl p-6 border bg-white shadow-md flex flex-col md:flex-row gap-6 items-center">
+            <div className="flex-1">
+              <div className="text-lg font-semibold text-green-700">Order #{order.id.slice(0, 8)}</div>
+              <div className="mt-2 text-gray-600">Status: <span className="font-bold text-orange-600">{lastOrder.status}</span></div>
+              <div className="mt-1 text-gray-600">Meal: <span className="font-bold">{lastOrder.food_type}</span></div>
+              <div className="mt-1 text-gray-600">Children: <span className="font-bold">{lastOrder.num_children}</span></div>
+              <div className="mt-1 text-gray-600">Location: <span className="font-bold">{lastOrder.location}</span></div>
+              <div className="mt-1 text-gray-600">Meal Time: <span className="font-bold">{lastOrder.meal_time}</span></div>
+              <div className="mt-1 text-gray-600">Phone: <span className="font-bold">{lastOrder.phone_number}</span></div>
+              <div className="mt-1 text-gray-600">Dietary Needs: <span className="font-bold">{lastOrder.dietary_needs}</span></div>
+            </div>
+          </div>
         ) : (
           <div className="text-gray-500">No active requests.</div>
         )}
       </section>
-
       {/* Order History Section */}
       <section className="mx-auto max-w-4xl px-4 pb-16">
         <h2 className="text-2xl font-bold text-green-800 mb-4">Order History</h2>
@@ -573,33 +618,34 @@ export default function Requester({ user }) {
                 <th className="py-3 px-4 text-left">Order ID</th>
                 <th className="py-3 px-4 text-left">Date</th>
                 <th className="py-3 px-4 text-left">Meal</th>
-                <th className="py-3 px-4 text-left">Provider</th>
-                <th className="py-3 px-4 text-left">Donor</th>
                 <th className="py-3 px-4 text-left">Children</th>
-                <th className="py-3 px-4 text-left">Value</th>
+                <th className="py-3 px-4 text-left">Location</th>
                 <th className="py-3 px-4 text-left">Status</th>
-                <th className="py-3 px-4 text-left">Feedback</th>
+                <th className="py-3 px-4 text-left">Meal Time</th>
+                <th className="py-3 px-4 text-left">Phone</th>
+                <th className="py-3 px-4 text-left">Dietary Needs</th>
               </tr>
             </thead>
             <tbody>
-              {orderHistory.map(order => (
+              {orderHistory.length === 0 ? (
+                <tr><td colSpan={9} className="text-gray-500 py-4 text-center">No history found.</td></tr>
+              ) : orderHistory.map(order => (
                 <tr key={order.id} className="border-b hover:bg-green-50">
-                  <td className="py-2 px-4">{order.id}</td>
-                  <td className="py-2 px-4">{order.date}</td>
-                  <td className="py-2 px-4">{order.meal}</td>
-                  <td className="py-2 px-4">{order.provider}</td>
-                  <td className="py-2 px-4">{order.donor}</td>
-                  <td className="py-2 px-4">{order.children}</td>
-                  <td className="py-2 px-4">{order.value}</td>
+                  <td className="py-2 px-4">{order.id.slice(0, 8)}</td>
+                  <td className="py-2 px-4">{new Date(order.created_at).toLocaleDateString()}</td>
+                  <td className="py-2 px-4">{order.food_type}</td>
+                  <td className="py-2 px-4">{order.num_children}</td>
+                  <td className="py-2 px-4">{order.location}</td>
                   <td className="py-2 px-4">{order.status}</td>
-                  <td className="py-2 px-4">{order.feedback}</td>
+                  <td className="py-2 px-4">{order.meal_time}</td>
+                  <td className="py-2 px-4">{order.phone_number}</td>
+                  <td className="py-2 px-4">{order.dietary_needs}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </section>
-
       {/* Modals */}
       <RequestFoodModal open={isRequestModalOpen} onClose={() => setRequestModalOpen(false)} user={user} />
       <ChatModal open={isChatOpen} onClose={() => setChatOpen(false)} withWhom={isChatOpen ? 'Provider/Donor' : ''} />

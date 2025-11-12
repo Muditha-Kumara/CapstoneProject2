@@ -20,4 +20,7 @@ router.post(
   requestController.createRequest
 );
 
+// Get requests for a user
+router.get('/', requestController.getRequestsByUser);
+
 module.exports = router;

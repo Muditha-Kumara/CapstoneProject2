@@ -40,3 +40,23 @@ exports.createRequest = async (req, res) => {
       .json({ message: 'Failed to create request', error: err.message });
   }
 };
+
+// Get requests for a user, with optional limit
+exports.getRequestsByUser = async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    const limit = parseInt(req.query.limit, 10) || 20; // default limit 20
+    if (!userId) {
+      return res.status(400).json({ message: 'Missing userId parameter' });
+    }
+    // Order by created_at DESC, so most recent first
+    const sql = `SELECT * FROM requests WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2`;
+    const params = [userId, limit];
+    const result = await db.query(sql, params);
+    res.status(200).json({ data: result.rows });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: 'Failed to fetch requests', error: err.message });
+  }
+};
