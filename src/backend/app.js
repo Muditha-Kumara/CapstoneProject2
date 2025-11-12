@@ -42,4 +42,8 @@ app.use('/auth', authRoutes);
 const protectedRoutes = require('./routes/protected.routes');
 app.use('/protected', protectedRoutes);
 
+// Request routes
+const requestRoutes = require('./routes/request.routes');
+app.use('/requests', requestRoutes);
+
 module.exports = app;

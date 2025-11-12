@@ -4,6 +4,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import Modal from '../components/Modal';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
+import { api } from '../lib/api';
 
 // Demo data for active order and history
 const activeOrder = {
@@ -58,6 +59,7 @@ function RequestFoodModal({ open, onClose, user }) {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({}); // NEW: track touched fields
   const [notification, setNotification] = useState(''); // NEW: notification state
+  const [loading, setLoading] = useState(false);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
   const timePickerWrapperRef = useRef(null);
@@ -208,7 +210,7 @@ function RequestFoodModal({ open, onClose, user }) {
     setTouched(prev => ({ ...prev, [field]: true }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setTouched({ name: true, phone: true, location: true, numChildren: true, mealType: true, mealTime: true });
     if (!isFormValid) {
@@ -216,8 +218,29 @@ function RequestFoodModal({ open, onClose, user }) {
       return;
     }
     setNotification('');
-    alert('Food request submitted!');
-    onClose();
+    setLoading(true);
+    try {
+      const payload = {
+        userId: user?.id || '',
+        foodType: mealType,
+        quantity: parseInt(numChildren, 10),
+        location,
+        mealTime,
+        numChildren: parseInt(numChildren, 10),
+        phoneNumber,
+        dietaryNeeds: '', // TODO: get from textarea if needed
+      };
+      await api.createFoodRequest(payload);
+      setNotification('Food request submitted successfully!');
+      setTimeout(() => {
+        setNotification('');
+        onClose();
+      }, 1200);
+    } catch (err) {
+      setNotification(err.message || 'Failed to submit request.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -414,22 +437,13 @@ function RequestFoodModal({ open, onClose, user }) {
           </button>
           <div className="flex items-center gap-2">
             <button
-              type="button"
+              type="submit"
               className={`px-4 py-2 text-white rounded-lg focus:ring-2 focus:ring-green-400 transition ${isFormValid ? 'bg-green-600 hover:bg-green-700 cursor-pointer shadow' : 'bg-gray-400 cursor-not-allowed opacity-60'}`}
-              aria-disabled={!isFormValid}
+              aria-disabled={!isFormValid || loading}
               tabIndex={0}
-              onClick={() => {
-                if (!isFormValid) {
-                  setTouched({ name: true, phone: true, location: true, numChildren: true, mealType: true, mealTime: true });
-                  setNotification('Please complete all required fields correctly before submitting.');
-                } else {
-                  setNotification('');
-                  alert('Food request submitted!');
-                  onClose();
-                }
-              }}
+              disabled={!isFormValid || loading}
             >
-              Submit
+              {loading ? 'Submitting…' : 'Submit'}
             </button>
             {notification && (
               <div className="p-2 bg-red-100 border border-red-400 text-red-700 rounded flex items-center" role="alert">
