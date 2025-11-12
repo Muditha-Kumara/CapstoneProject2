@@ -5,6 +5,8 @@ import Modal from '../components/Modal';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import { api } from '../lib/api';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Demo data for active order and history
 const activeOrder = {
@@ -58,7 +60,6 @@ function RequestFoodModal({ open, onClose, user }) {
   const [timeOptions, setTimeOptions] = useState([]); // NEW: store time options in state
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({}); // NEW: track touched fields
-  const [notification, setNotification] = useState(''); // NEW: notification state
   const [loading, setLoading] = useState(false);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
@@ -196,10 +197,6 @@ function RequestFoodModal({ open, onClose, user }) {
   // Live validation on change
   useEffect(() => {
     setErrors(validateAll());
-    // Hide notification if form becomes valid
-    if (notification && Object.values(validateAll()).every(err => !err)) {
-      setNotification('');
-    }
     // eslint-disable-next-line
   }, [name, phoneNumber, location, numChildren, mealType, mealTime]);
 
@@ -214,10 +211,12 @@ function RequestFoodModal({ open, onClose, user }) {
     e.preventDefault();
     setTouched({ name: true, phone: true, location: true, numChildren: true, mealType: true, mealTime: true });
     if (!isFormValid) {
-      setNotification('Please complete all required fields correctly before submitting.');
+      // Show all field errors as toast
+      Object.entries(validateAll()).forEach(([field, error]) => {
+        if (error) toast.error(error);
+      });
       return;
     }
-    setNotification('');
     setLoading(true);
     try {
       const payload = {
@@ -231,13 +230,12 @@ function RequestFoodModal({ open, onClose, user }) {
         dietaryNeeds: '', // TODO: get from textarea if needed
       };
       await api.createFoodRequest(payload);
-      setNotification('Food request submitted successfully!');
+      toast.success('Food request submitted successfully!');
       setTimeout(() => {
-        setNotification('');
         onClose();
       }, 1200);
     } catch (err) {
-      setNotification(err.message || 'Failed to submit request.');
+      toast.error(err.message || 'Failed to submit request.');
     } finally {
       setLoading(false);
     }
@@ -250,6 +248,7 @@ function RequestFoodModal({ open, onClose, user }) {
   return (
     <Modal open={open} onClose={onClose} title="Request Food">
       <form className="space-y-6 bg-gray-50 p-6 rounded-xl shadow-md" onSubmit={handleSubmit}>
+        {/* Removed Notification at top, use toast instead */}
         <h3 className="text-xl font-semibold text-green-700 mb-2">Meal Request Details</h3>
         {/* Name input - move to top */}
         <div>
@@ -445,12 +444,6 @@ function RequestFoodModal({ open, onClose, user }) {
             >
               {loading ? 'Submitting…' : 'Submit'}
             </button>
-            {notification && (
-              <div className="p-2 bg-red-100 border border-red-400 text-red-700 rounded flex items-center" role="alert">
-                <span>{notification}</span>
-                <button type="button" className="ml-2 text-red-700 font-bold" aria-label="Dismiss notification" onClick={() => setNotification('')}>&times;</button>
-              </div>
-            )}
           </div>
         </div>
       </form>
