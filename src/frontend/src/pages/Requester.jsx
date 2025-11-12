@@ -172,7 +172,9 @@ function RequestFoodModal({ open, onClose, user }) {
         <h3 className="text-xl font-semibold text-green-700 mb-2">Meal Request Details</h3>
         {/* Name input - move to top */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="name">Your Name (Trusted Adult)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="name">
+            Your Name (Trusted Adult) <span className="text-red-500" aria-label="required">*</span>
+          </label>
           <input
             id="name"
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
@@ -185,7 +187,10 @@ function RequestFoodModal({ open, onClose, user }) {
         </div>
         {/* Phone Input with Country Code and Flag - add gap and spacing */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="phone">Phone Number</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="phone">
+            Phone Number <span className="text-red-500" aria-label="required">*</span>
+          </label>
+          <span className="block text-xs text-gray-500 mb-2">Provide a valid phone number for contact and order updates.</span>
           <PhoneInput
             country={'us'}
             value={phoneNumber}
@@ -203,7 +208,10 @@ function RequestFoodModal({ open, onClose, user }) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="location">Location (Select from the map)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="location">
+            Location (Select from the map) <span className="text-red-500" aria-label="required">*</span>
+          </label>
+          <span className="block text-xs text-gray-500 mb-2">Specify the location for meal delivery using map. You can drag and drop red mark to your location in the map.</span>
           <div className="flex gap-2">
             <input
               id="location"
@@ -228,7 +236,10 @@ function RequestFoodModal({ open, onClose, user }) {
         <div className="w-full h-64 rounded-lg border mb-4" ref={mapRef} style={{ minHeight: '256px' }}></div>
         {/* Custom Dropdown for Number of Children */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Number of Children</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Number of Children <span className="text-red-500" aria-label="required">*</span>
+          </label>
+          <span className="block text-xs text-gray-500 mb-2">Select the number of children who need a meal.</span>
           <div className="relative" style={{ zIndex: activeDropdown === 'children' ? 100 : 30 }}>
             <div onMouseLeave={() => { setChildrenDropdownOpen(false); setActiveDropdown(null); }}>
               <button
@@ -258,7 +269,10 @@ function RequestFoodModal({ open, onClose, user }) {
         </div>
         {/* Custom Dropdown for Meal Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Meal Type</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Meal Type <span className="text-red-500" aria-label="required">*</span>
+          </label>
+          <span className="block text-xs text-gray-500 mb-2">Choose the type of meal needed (e.g., main, snack, drink).</span>
           <div className="relative" style={{ zIndex: activeDropdown === 'mealType' ? 100 : 30 }}>
             <div onMouseLeave={() => { setMealTypeDropdownOpen(false); setActiveDropdown(null); }}>
               <button
@@ -288,8 +302,10 @@ function RequestFoodModal({ open, onClose, user }) {
         </div>
         {/* Custom Dropdown for Meal Time */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Meal Time</label>
-          <span className="block text-xs text-gray-500 mb-2">Earliest selectable time is 1 hour from now.</span>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Meal Time <span className="text-red-500" aria-label="required">*</span>
+          </label>
+          <span className="block text-xs text-gray-500 mb-2">Select the time you want the meal delivered. Earliest selectable time is 1 hour from now.</span>
           <div className="relative" style={{ zIndex: activeDropdown === 'mealTime' ? 100 : 30 }}>
             <div onMouseLeave={() => { setMealTimeDropdownOpen(false); setActiveDropdown(null); }}>
               <button
@@ -319,6 +335,7 @@ function RequestFoodModal({ open, onClose, user }) {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Dietary needs or preferences (optional)</label>
+          <span className="block text-xs text-gray-500 mb-2">Mention any allergies, dietary restrictions, or preferences for the meal.</span>
           <textarea className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition" placeholder="Dietary needs or preferences (optional)" />
         </div>
         <div className="flex justify-end gap-3 pt-2">
