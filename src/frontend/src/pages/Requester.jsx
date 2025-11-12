@@ -210,11 +210,11 @@ function RequestFoodModal({ open, onClose, user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setTouched({ name: true, phone: true, location: true, numChildren: true, mealType: true, mealTime: true });
+    // Always show all field errors as toast, even if form is valid
+    Object.entries(validateAll()).forEach(([field, error]) => {
+      if (error) toast.error(error);
+    });
     if (!isFormValid) {
-      // Show all field errors as toast
-      Object.entries(validateAll()).forEach(([field, error]) => {
-        if (error) toast.error(error);
-      });
       return;
     }
     setLoading(true);
@@ -440,7 +440,15 @@ function RequestFoodModal({ open, onClose, user }) {
               className={`px-4 py-2 text-white rounded-lg focus:ring-2 focus:ring-green-400 transition ${isFormValid ? 'bg-green-600 hover:bg-green-700 cursor-pointer shadow' : 'bg-gray-400 cursor-not-allowed opacity-60'}`}
               aria-disabled={!isFormValid || loading}
               tabIndex={0}
-              disabled={!isFormValid || loading}
+              disabled={loading}
+              onClick={e => {
+                if (!isFormValid) {
+                  e.preventDefault();
+                  Object.entries(validateAll()).forEach(([field, error]) => {
+                    if (error) toast.error(error);
+                  });
+                }
+              }}
             >
               {loading ? 'Submitting…' : 'Submit'}
             </button>
