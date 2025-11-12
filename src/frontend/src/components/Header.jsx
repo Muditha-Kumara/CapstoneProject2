@@ -14,7 +14,7 @@ function getDashboardInfo(role) {
     case 'donor':
       return { route: '/donor', label: 'Donor Dashboard', color: 'orange-600' };
     case 'recipient':
-      return { route: '/requester', label: 'Recipient Dashboard', color: 'blue-600' };
+      return { route: '/recipient', label: 'Recipient Dashboard', color: 'blue-600' };
     case 'provider':
       return { route: '/provider', label: 'Provider Dashboard', color: 'purple-600' };
     case 'admin':

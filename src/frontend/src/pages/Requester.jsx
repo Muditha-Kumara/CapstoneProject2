@@ -46,17 +46,20 @@ const orderHistory = [
 ];
 
 function RequestFoodModal({ open, onClose, user }) {
-  const [numChildren, setNumChildren] = useState('');
+  const [form, setForm] = useState({
+    name: user?.name || '',
+    phoneNumber: '',
+    location: '',
+    numChildren: '',
+    mealType: '',
+    mealTime: '',
+    dietaryNeeds: '',
+  });
   const [childrenDropdownOpen, setChildrenDropdownOpen] = useState(false);
-  const [mealType, setMealType] = useState('');
   const [mealTypeDropdownOpen, setMealTypeDropdownOpen] = useState(false);
-  const [mealTime, setMealTime] = useState('');
   const [mealTimeDropdownOpen, setMealTimeDropdownOpen] = useState(false);
-  const [location, setLocation] = useState('');
   const [locating, setLocating] = useState(false);
   const [coords, setCoords] = useState(null);
-  const [name, setName] = useState(user?.name || '');
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [timeOptions, setTimeOptions] = useState([]); // NEW: store time options in state
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({}); // NEW: track touched fields
@@ -97,8 +100,8 @@ function RequestFoodModal({ open, onClose, user }) {
       const newOptions = getTimeOptions();
       setTimeOptions(newOptions);
       // If selected time is no longer valid, reset it
-      if (!newOptions.includes(mealTime)) {
-        setMealTime('');
+      if (!newOptions.includes(form.mealTime)) {
+        setForm(prev => ({ ...prev, mealTime: '' }));
       }
     }
   }, [open]);
@@ -112,7 +115,10 @@ function RequestFoodModal({ open, onClose, user }) {
         (pos) => {
           const { latitude, longitude } = pos.coords;
           setCoords({ lat: latitude, lng: longitude });
-          setLocation(`Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`);
+          setForm({
+            ...form,
+            location: `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`,
+          });
           setLocating(false);
         },
         () => {
@@ -136,7 +142,10 @@ function RequestFoodModal({ open, onClose, user }) {
       marker.addListener('dragend', () => {
         const pos = marker.getPosition();
         setCoords({ lat: pos.lat(), lng: pos.lng() });
-        setLocation(`Lat: ${pos.lat().toFixed(5)}, Lng: ${pos.lng().toFixed(5)}`);
+        setForm({
+          ...form,
+          location: `Lat: ${pos.lat().toFixed(5)}, Lng: ${pos.lng().toFixed(5)}`,
+        });
       });
       markerRef.current = marker;
     }
@@ -152,7 +161,10 @@ function RequestFoodModal({ open, onClose, user }) {
       (pos) => {
         const { latitude, longitude } = pos.coords;
         setCoords({ lat: latitude, lng: longitude });
-        setLocation(`Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`);
+        setForm({
+          ...form,
+          location: `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`,
+        });
         setLocating(false);
       },
       (err) => {
@@ -185,12 +197,12 @@ function RequestFoodModal({ open, onClose, user }) {
   // Validate all fields
   const validateAll = () => {
     return {
-      name: validateField('name', name),
-      phone: validateField('phone', phoneNumber),
-      location: validateField('location', location),
-      numChildren: validateField('numChildren', numChildren),
-      mealType: validateField('mealType', mealType),
-      mealTime: validateField('mealTime', mealTime),
+      name: validateField('name', form.name),
+      phone: validateField('phone', form.phoneNumber),
+      location: validateField('location', form.location),
+      numChildren: validateField('numChildren', form.numChildren),
+      mealType: validateField('mealType', form.mealType),
+      mealTime: validateField('mealTime', form.mealTime),
     };
   };
 
@@ -198,7 +210,7 @@ function RequestFoodModal({ open, onClose, user }) {
   useEffect(() => {
     setErrors(validateAll());
     // eslint-disable-next-line
-  }, [name, phoneNumber, location, numChildren, mealType, mealTime]);
+  }, [form.name, form.phoneNumber, form.location, form.numChildren, form.mealType, form.mealTime]);
 
   // Check if all required fields are valid
   const isFormValid = Object.values(validateAll()).every(err => !err);
@@ -221,13 +233,13 @@ function RequestFoodModal({ open, onClose, user }) {
     try {
       const payload = {
         userId: user?.id || '',
-        foodType: mealType,
-        quantity: parseInt(numChildren, 10),
-        location,
-        mealTime,
-        numChildren: parseInt(numChildren, 10),
-        phoneNumber,
-        dietaryNeeds: '', // TODO: get from textarea if needed
+        foodType: form.mealType,
+        quantity: parseInt(form.numChildren, 10),
+        location: form.location,
+        mealTime: form.mealTime,
+        numChildren: parseInt(form.numChildren, 10),
+        phoneNumber: form.phoneNumber,
+        dietaryNeeds: form.dietaryNeeds, // UPDATED: get from state
       };
       await api.createFoodRequest(payload);
       toast.success('Food request submitted successfully!');
@@ -242,7 +254,7 @@ function RequestFoodModal({ open, onClose, user }) {
   };
 
   useEffect(() => {
-    if (user?.name) setName(user.name);
+    if (user?.name) setForm(prev => ({ ...prev, name: user.name }));
   }, [user]);
 
   return (
@@ -259,8 +271,8 @@ function RequestFoodModal({ open, onClose, user }) {
             id="name"
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
             placeholder="Your Name"
-            value={name}
-            onChange={e => setName(e.target.value)}
+            value={form.name}
+            onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
             onBlur={() => handleBlur('name')}
             required
             disabled={!!user?.name}
@@ -275,8 +287,8 @@ function RequestFoodModal({ open, onClose, user }) {
           <span className="block text-xs text-gray-500 mb-2">Provide a valid phone number for contact and order updates.</span>
           <PhoneInput
             country={'us'}
-            value={phoneNumber}
-            onChange={setPhoneNumber}
+            value={form.phoneNumber}
+            onChange={value => setForm(prev => ({ ...prev, phoneNumber: value }))}
             inputProps={{
               name: 'phone',
               id: 'phone',
@@ -301,8 +313,8 @@ function RequestFoodModal({ open, onClose, user }) {
               id="location"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
               placeholder="Location (School, etc.)"
-              value={location}
-              onChange={e => setLocation(e.target.value)}
+              value={form.location}
+              onChange={e => setForm(prev => ({ ...prev, location: e.target.value }))}
               onBlur={() => handleBlur('location')}
               required
               readOnly
@@ -335,7 +347,7 @@ function RequestFoodModal({ open, onClose, user }) {
                 tabIndex={0}
                 onBlur={() => handleBlur('numChildren')}
               >
-                {numChildren ? numChildren : 'Select number'}
+                {form.numChildren ? form.numChildren : 'Select number'}
                 <span className="ml-2">▼</span>
               </button>
               {childrenDropdownOpen && (
@@ -344,7 +356,7 @@ function RequestFoodModal({ open, onClose, user }) {
                     <div
                       key={opt}
                       className="px-4 py-2 cursor-pointer hover:bg-green-100"
-                      onClick={() => { setNumChildren(opt); setChildrenDropdownOpen(false); setActiveDropdown(null); handleBlur('numChildren'); }}
+                      onClick={() => { setForm(prev => ({ ...prev, numChildren: opt })); setChildrenDropdownOpen(false); setActiveDropdown(null); handleBlur('numChildren'); }}
                     >
                       {opt}
                     </div>
@@ -370,7 +382,7 @@ function RequestFoodModal({ open, onClose, user }) {
                 tabIndex={0}
                 onBlur={() => handleBlur('mealType')}
               >
-                {mealType ? mealType : 'Select meal type'}
+                {form.mealType ? form.mealType : 'Select meal type'}
                 <span className="ml-2">▼</span>
               </button>
               {mealTypeDropdownOpen && (
@@ -379,7 +391,7 @@ function RequestFoodModal({ open, onClose, user }) {
                     <div
                       key={opt}
                       className="px-4 py-2 cursor-pointer hover:bg-green-100"
-                      onClick={() => { setMealType(opt); setMealTypeDropdownOpen(false); setActiveDropdown(null); handleBlur('mealType'); }}
+                      onClick={() => { setForm(prev => ({ ...prev, mealType: opt })); setMealTypeDropdownOpen(false); setActiveDropdown(null); handleBlur('mealType'); }}
                     >
                       {opt}
                     </div>
@@ -405,7 +417,7 @@ function RequestFoodModal({ open, onClose, user }) {
                 tabIndex={0}
                 onBlur={() => handleBlur('mealTime')}
               >
-                {mealTime ? mealTime : 'Select meal time'}
+                {form.mealTime ? form.mealTime : 'Select meal time'}
                 <span className="ml-2">▼</span>
               </button>
               {mealTimeDropdownOpen && (
@@ -414,7 +426,7 @@ function RequestFoodModal({ open, onClose, user }) {
                     <div
                       key={opt}
                       className="px-4 py-2 cursor-pointer hover:bg-green-100"
-                      onClick={() => { setMealTime(opt); setMealTimeDropdownOpen(false); setActiveDropdown(null); handleBlur('mealTime'); }}
+                      onClick={() => { setForm(prev => ({ ...prev, mealTime: opt })); setMealTimeDropdownOpen(false); setActiveDropdown(null); handleBlur('mealTime'); }}
                     >
                       {opt}
                     </div>
@@ -428,7 +440,12 @@ function RequestFoodModal({ open, onClose, user }) {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Dietary needs or preferences (optional)</label>
           <span className="block text-xs text-gray-500 mb-2">Mention any allergies, dietary restrictions, or preferences for the meal.</span>
-          <textarea className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition" placeholder="Dietary needs or preferences (optional)" />
+          <textarea
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+            placeholder="Dietary needs or preferences (optional)"
+            value={form.dietaryNeeds}
+            onChange={e => setForm(prev => ({ ...prev, dietaryNeeds: e.target.value }))}
+          />
         </div>
         <div className="flex justify-end gap-3 pt-2 items-center">
           <button type="button" className="px-4 py-2 border rounded-lg" onClick={onClose}>
