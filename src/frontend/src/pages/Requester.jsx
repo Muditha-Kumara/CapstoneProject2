@@ -45,7 +45,7 @@ const orderHistory = [
   },
 ];
 
-function RequestFoodModal({ open, onClose, user }) {
+function RequestFoodModal({ open, onClose, user, refreshRequests }) {
   const [form, setForm] = useState({
     name: user?.name || '',
     phoneNumber: '',
@@ -222,7 +222,6 @@ function RequestFoodModal({ open, onClose, user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setTouched({ name: true, phone: true, location: true, numChildren: true, mealType: true, mealTime: true });
-    // Always show all field errors as toast, even if form is valid
     Object.entries(validateAll()).forEach(([field, error]) => {
       if (error) toast.error(error);
     });
@@ -239,10 +238,11 @@ function RequestFoodModal({ open, onClose, user }) {
         mealTime: form.mealTime,
         numChildren: parseInt(form.numChildren, 10),
         phoneNumber: form.phoneNumber,
-        dietaryNeeds: form.dietaryNeeds, // UPDATED: get from state
+        dietaryNeeds: form.dietaryNeeds,
       };
       await api.createFoodRequest(payload);
       toast.success('Food request submitted successfully!');
+      if (refreshRequests) await refreshRequests(); // Refresh orders after submit
       setTimeout(() => {
         onClose();
       }, 1200);
@@ -517,20 +517,22 @@ export default function Requester({ user }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchRequests() {
-      if (!user?.id) return;
-      setLoading(true);
-      try {
-        const res = await api.getRequestsByUser({ userId: user.id, limit: 20 });
-        setRequests(res.data || []);
-      } catch (err) {
-        toast.error(err.message || 'Failed to load requests');
-      } finally {
-        setLoading(false);
-      }
+  const refreshRequests = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const res = await api.getRequestsByUser({ userId: user.id, limit: 20 });
+      setRequests(res.data || []);
+    } catch (err) {
+      toast.error(err.message || 'Failed to load requests');
+    } finally {
+      setLoading(false);
     }
-    fetchRequests();
+  };
+
+  useEffect(() => {
+    refreshRequests();
+    // eslint-disable-next-line
   }, [user?.id]);
 
   // Find active request (not completed/cancelled/fulfilled)
@@ -647,7 +649,7 @@ export default function Requester({ user }) {
         </div>
       </section>
       {/* Modals */}
-      <RequestFoodModal open={isRequestModalOpen} onClose={() => setRequestModalOpen(false)} user={user} />
+      <RequestFoodModal open={isRequestModalOpen} onClose={() => setRequestModalOpen(false)} user={user} refreshRequests={refreshRequests} />
       <ChatModal open={isChatOpen} onClose={() => setChatOpen(false)} withWhom={isChatOpen ? 'Provider/Donor' : ''} />
       <FeedbackModal open={isFeedbackOpen} onClose={() => setFeedbackOpen(false)} orderId={activeOrder?.id} />
     </div>
