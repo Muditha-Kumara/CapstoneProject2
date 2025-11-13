@@ -140,3 +140,8 @@ vite.config.ts.timestamp-*
 
 # Private files
 private/
+
+# Ignore certificate files
+*.pem
+*.crt
+*.cet

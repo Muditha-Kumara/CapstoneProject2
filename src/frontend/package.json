@@ -4,16 +4,21 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3000",
+    "dev": "vite --port 3000 --host",
     "build": "vite build",
     "preview": "vite preview --port 3000",
     "mock:api": "json-server --watch mocks/db.json --port 3001",
     "dev:all": "npm-run-all -p mock:api dev"
   },
   "dependencies": {
+    "classnames": "^2.5.1",
     "react": "^18.3.1",
+    "react-datepicker": "^8.9.0",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.27.0"
+    "react-phone-input-2": "^2.15.1",
+    "react-router-dom": "^6.27.0",
+    "react-time-picker": "^8.0.2",
+    "react-toastify": "^11.0.5"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",

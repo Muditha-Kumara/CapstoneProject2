@@ -12,6 +12,8 @@ import Requester from './pages/Requester';
 import Provider from './pages/Provider';
 import Admin from './pages/Admin';
 import { api } from './lib/api'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function App() {
   console.log('App.jsx rendered');
@@ -81,6 +83,7 @@ export default function App() {
         }} />
       </main>
       <Footer />
+      <ToastContainer position="top-center" autoClose={3000} />
     </div>
   )
 }

@@ -48,12 +48,10 @@ exports.register = async (req, res) => {
       subject: 'Verify your email',
       html: `<p>Click <a href="${verifyUrl}">here</a> to verify your email.</p>`,
     });
-    res
-      .status(201)
-      .json({
-        message:
-          'Registration successful. Please check your email to verify your account.',
-      });
+    res.status(201).json({
+      message:
+        'Registration successful. Please check your email to verify your account.',
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

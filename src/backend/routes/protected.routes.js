@@ -4,9 +4,14 @@ const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 const router = express.Router();
 
 // Example: Only admin can access this route
-router.get('/admin-only', authenticateJWT, authorizeRoles('admin'), (req, res) => {
-  res.json({ message: 'Welcome, admin!', user: req.user });
-});
+router.get(
+  '/admin-only',
+  authenticateJWT,
+  authorizeRoles('admin'),
+  (req, res) => {
+    res.json({ message: 'Welcome, admin!', user: req.user });
+  }
+);
 
 // Example: Any authenticated user can access this route
 router.get('/me', authenticateJWT, (req, res) => {

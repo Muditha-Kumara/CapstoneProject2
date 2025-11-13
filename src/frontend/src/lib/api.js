@@ -72,5 +72,12 @@ export const api = {
     await request('/auth/logout', { method: 'POST' });
     setApiAccessToken(null);
   },
+  createFoodRequest: async (payload) => {
+    return request('/requests', { method: 'POST', body: payload });
+  },
+  getRequestsByUser: async ({ userId, limit = 20 }) => {
+    const params = new URLSearchParams({ userId, limit });
+    return request(`/requests?${params.toString()}`, { method: 'GET' });
+  },
   // Add other authenticated endpoints here
 };
