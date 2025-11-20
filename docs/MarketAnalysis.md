@@ -14,7 +14,7 @@ The commercial and social success potential for NourishNet is assessed as **High
 
 The following charts illustrate the Real-Data Chart & Trend (Last 5 Years), demonstrating the scale and urgency of global child malnutrition:
 
-![alt text](image.png)
+![alt text](./assets/marketAnalysisImages/image.png)
 
 ### Market Drivers
 
@@ -147,6 +147,6 @@ Unilever. 2024. *Tackling food waste.* Available at: https://www.unilever.com/su
 
 World Health Organization (WHO). 2024. *Levels and Trends in Child Malnutrition: Key Findings.* Available at: https://www.who.int/data/gho/data/themes/topics/topic-details/GHO/child-malnutrition-. Accessed 15 November 2025.
 
-![alt text](image-1.png)
+![alt text](./assets/marketAnalysisImages/image-1.png)
 
-![alt text](image-2.png)
+![alt text](./assets/marketAnalysisImages/image-2.png)
