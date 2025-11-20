@@ -50,4 +50,8 @@ app.use('/requests', requestRoutes);
 const donorRoutes = require('./routes/donor.routes');
 app.use('/donor', donorRoutes);
 
+// Provider routes
+const providerRoutes = require('./routes/provider.routes');
+app.use('/provider', providerRoutes);
+
 module.exports = app;

@@ -114,5 +114,45 @@ export const api = {
       auth: true,
     });
   },
+  // Provider endpoints
+  getAvailableRequests: async ({ limit = 20, offset = 0 } = {}) => {
+    const params = new URLSearchParams({ limit, offset });
+    return request(`/provider/requests?${params.toString()}`, {
+      method: 'GET',
+      auth: true,
+    });
+  },
+  getProviderOrders: async ({ limit = 20, offset = 0, status } = {}) => {
+    const params = new URLSearchParams({ limit, offset });
+    if (status) params.append('status', status);
+    return request(`/provider/orders?${params.toString()}`, {
+      method: 'GET',
+      auth: true,
+    });
+  },
+  getProviderStats: async () => {
+    return request('/provider/stats', { method: 'GET', auth: true });
+  },
+  acceptRequest: async (payload) => {
+    return request('/provider/accept', {
+      method: 'POST',
+      body: payload,
+      auth: true,
+    });
+  },
+  updateOrderStatus: async (payload) => {
+    return request('/provider/order/status', {
+      method: 'PUT',
+      body: payload,
+      auth: true,
+    });
+  },
+  cancelOrder: async (payload) => {
+    return request('/provider/order/cancel', {
+      method: 'POST',
+      body: payload,
+      auth: true,
+    });
+  },
   // Add other authenticated endpoints here
 };
