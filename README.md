@@ -16,7 +16,7 @@ Mobilizing communities to directly address childhood food insecurity by connecti
 - Secure and privacy-focused
 
 ## 🛠️ Tech Stack
-- **Frontend:** React (Vite, Bootstrap)
+- **Frontend:** Tailwind
 - **Backend:** Node.js (Express)
 - **Database:** PostgreSQL
 - **Containerization:** Docker, Docker Compose
