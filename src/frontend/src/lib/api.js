@@ -79,5 +79,80 @@ export const api = {
     const params = new URLSearchParams({ userId, limit });
     return request(`/requests?${params.toString()}`, { method: 'GET' });
   },
+  // Donor endpoints
+  getDonorStats: async () => {
+    return request('/donor/stats', { method: 'GET', auth: true });
+  },
+  getTransactionHistory: async ({ limit = 20, offset = 0 } = {}) => {
+    const params = new URLSearchParams({ limit, offset });
+    return request(`/donor/transactions?${params.toString()}`, {
+      method: 'GET',
+      auth: true,
+    });
+  },
+  getDeliveredDonations: async ({ limit = 20, offset = 0 } = {}) => {
+    const params = new URLSearchParams({ limit, offset });
+    return request(`/donor/deliveries?${params.toString()}`, {
+      method: 'GET',
+      auth: true,
+    });
+  },
+  getDonorFeedback: async ({ limit = 10 } = {}) => {
+    const params = new URLSearchParams({ limit });
+    return request(`/donor/feedback?${params.toString()}`, {
+      method: 'GET',
+      auth: true,
+    });
+  },
+  getDonorBalance: async () => {
+    return request('/donor/balance', { method: 'GET', auth: true });
+  },
+  processDonation: async (payload) => {
+    return request('/donor/donate', {
+      method: 'POST',
+      body: payload,
+      auth: true,
+    });
+  },
+  // Provider endpoints
+  getAvailableRequests: async ({ limit = 20, offset = 0 } = {}) => {
+    const params = new URLSearchParams({ limit, offset });
+    return request(`/provider/requests?${params.toString()}`, {
+      method: 'GET',
+      auth: true,
+    });
+  },
+  getProviderOrders: async ({ limit = 20, offset = 0, status } = {}) => {
+    const params = new URLSearchParams({ limit, offset });
+    if (status) params.append('status', status);
+    return request(`/provider/orders?${params.toString()}`, {
+      method: 'GET',
+      auth: true,
+    });
+  },
+  getProviderStats: async () => {
+    return request('/provider/stats', { method: 'GET', auth: true });
+  },
+  acceptRequest: async (payload) => {
+    return request('/provider/accept', {
+      method: 'POST',
+      body: payload,
+      auth: true,
+    });
+  },
+  updateOrderStatus: async (payload) => {
+    return request('/provider/order/status', {
+      method: 'PUT',
+      body: payload,
+      auth: true,
+    });
+  },
+  cancelOrder: async (payload) => {
+    return request('/provider/order/cancel', {
+      method: 'POST',
+      body: payload,
+      auth: true,
+    });
+  },
   // Add other authenticated endpoints here
 };

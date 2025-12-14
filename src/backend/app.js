@@ -46,4 +46,12 @@ app.use('/protected', protectedRoutes);
 const requestRoutes = require('./routes/request.routes');
 app.use('/requests', requestRoutes);
 
+// Donor routes
+const donorRoutes = require('./routes/donor.routes');
+app.use('/donor', donorRoutes);
+
+// Provider routes
+const providerRoutes = require('./routes/provider.routes');
+app.use('/provider', providerRoutes);
+
 module.exports = app;
